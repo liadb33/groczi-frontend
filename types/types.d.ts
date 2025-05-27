@@ -323,28 +323,56 @@ declare interface ListFooterProps {
 
 
 // Promotion Types
-declare interface PromotionSummaryGrocery {
-  itemCode: string;
-  itemName: string;
+declare interface PromotionItem {
+  promotionId: string;
+  promotionName: string;
+  startDate: string;
+  endDate: string;
 }
 
-// Type for a promotion summary
-declare interface PromotionSummary {
-  promotionId: string;
-  promotionName: string | null;
-  storeName: string | null;
+declare interface PromotionItemProps {
+  promotion: { 
+    promotionName: string; 
+    endDate: string; 
+  };
+  isRTL: boolean;
+  onPromotionPress?: (promotion: { promotionName: string; endDate: string; }) => void;
+}
+
+// Type for a store with its promotions
+declare interface StoreWithPromotions {
   chainId: string;
   subChainId: string;
   storeId: string;
-  expiryDate: string | null;
-  groceries: PromotionSummaryGrocery[];
+  storeName: string;
+  address: string;
+  city: string;
+  zipcode: string | null;
+  latitude: number;
+  longitude: number;
+  promotions: PromotionItem[];
 }
 
 declare interface PromotionsSummaryStore {
-  promotions: PromotionSummary[];
+  promotions: any[];
+  discountedGroceries: any[];
   isLoading: boolean;
   error: string | null;
-  fetchPromotions: () => Promise<void>;
+
+  fetchAllPromotions: () => Promise<void>;
+  fetchDiscountedGroceries: (
+    promotionId: string,
+    chainId: string,
+    subChainId: string,
+    storeId: string
+  ) => Promise<void>;
+  fetchPromotionsByStore: (
+    chainId: string,
+    subChainId: string,
+    storeId: string
+  ) => Promise<void>;
+  fetchPromotionsByGroceryItemCode: (itemCode: string) => Promise<void>;
+  fetchPromotionsGroupedByStore: () => Promise<void>;
 }
 
 // Store Types

@@ -13,7 +13,8 @@ import LocationHeader from '@/components/header/LocationHeader';
 import { useLocationStore, usePromotionsSummaryStore } from '@/store';
 import FilterModal from '@/components/filter/FilterModal';
 import GroceryAutocompleteInput from '@/components/grocery/GroceryAutoCompleteInput';
-import PromotionCard from '@/components/grocery/PromotionCard';
+import PromotionCard from '@/components/promotions/PromotionCard';
+import PromotionListModal from '@/components/promotions/PromotionListModal';
 // Force RTL for the app
 I18nManager.forceRTL(true);
 
@@ -93,7 +94,7 @@ export default function HomeScreen() {
   // States for location
   const {setUserLocation,setDestinationLocation } = useLocationStore();
   const [hasPermission, setHasPermission] = useState(false);
-  const { promotions, isLoading, error, fetchPromotions } = usePromotionsSummaryStore();
+  const { promotions, isLoading, error, fetchPromotionsGroupedByStore } = usePromotionsSummaryStore();
 
   // New state to control ScrollView scrollability
   const [scrollEnabled, setScrollEnabled] = useState(true);
@@ -102,8 +103,19 @@ export default function HomeScreen() {
   const [searchResults, setSearchResults] = useState<DetailedGroceryItem[]>([]);
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
+  // State for promotion modal
+  const [isPromotionModalVisible, setIsPromotionModalVisible] = useState(false);
+  const [selectedStorePromotions, setSelectedStorePromotions] = useState<{
+    storeName: string;
+    storeAddress: string;
+    chainId: string;
+    subChainId: string;
+    storeId: string;
+    promotions: Array<{ promotionId: string; promotionName: string; endDate: string }>;
+  } | null>(null);
+
   useEffect(() => {
-    fetchPromotions();
+    fetchPromotionsGroupedByStore();
   }, []);
 
   /**
@@ -228,6 +240,54 @@ export default function HomeScreen() {
     router.push({
       pathname: "../groceryResults",
       params: { searchQuery: searchText },
+    });
+  };
+
+  /**
+   * Handles when "הצג עוד" is pressed in a PromotionCard
+   */
+  const handleShowMorePromotions = (store: {
+    storeName: string;
+    storeAddress: string;
+    chainId: string;
+    subChainId: string;
+    storeId: string;
+    promotions: Array<{ promotionId: string; promotionName: string; endDate: string }>;
+  }) => {
+    setSelectedStorePromotions(store);
+    setIsPromotionModalVisible(true);
+  };
+
+  /**
+   * Closes the promotion modal
+   */
+  const closePromotionModal = () => {
+    setIsPromotionModalVisible(false);
+    setSelectedStorePromotions(null);
+  };
+
+ /**
+   * Handles when a specific promotion is pressed in a PromotionCard
+   */
+  const handlePromotionPress = (promotion: {
+    promotionId: string;
+    promotionName: string;
+    endDate: string;
+    chainId: string;
+    subChainId: string;
+    storeId: string;
+  }) => {
+    if(isPromotionModalVisible){
+      closePromotionModal();
+    }
+    router.push({
+      pathname: "../groceryResults",
+      params: {
+        promotionId: promotion.promotionId,
+        chainId: promotion.chainId,
+        subChainId: promotion.subChainId,
+        storeId: promotion.storeId,
+      },
     });
   };
 
@@ -385,28 +445,24 @@ export default function HomeScreen() {
               אין מבצעים זמינים
             </Text>
           ) : (
-            promotions.map((promo, idx) => (
+            promotions.map((store, idx) => (
               <PromotionCard
-                key={promo.promotionId || idx}
-                storeName={promo.storeName || ""}
-                promotionName={promo.promotionName || ""}
-                expiryDate={
-                  promo.expiryDate
-                    ? `עד ${new Date(promo.expiryDate).toLocaleDateString(
-                        "he-IL",
-                        {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        }
-                      )}`
-                    : ""
-                }
-                items={promo.groceries
-                  .slice(0, 4)
-                  .map((g) => ({ name: g.itemName, price: "" }))}
-                image="https://images.unsplash.com/photo-1588168333986-5078d3ae3976?ixlib=rb-1.2.1&auto=format&fit=crop&w=480&q=80"
-                // optionally: use a real promo image if you have one
+                key={`${store.chainId}-${store.subChainId}-${store.storeId}`}
+                storeName={store.storeName || ""}
+                storeAddress={store.address || ""}
+                chainId={store.chainId}
+                subChainId={store.subChainId}
+                storeId={store.storeId}
+                promotions={store.promotions}
+                onPromotionPress={handlePromotionPress}
+                onShowMorePress={() => handleShowMorePromotions({
+                  storeName: store.storeName || "",
+                  storeAddress: store.address || "",
+                  chainId: store.chainId,
+                  subChainId: store.subChainId,
+                  storeId: store.storeId,
+                  promotions: store.promotions
+                })}
               />
             ))
           )}
@@ -473,6 +529,21 @@ export default function HomeScreen() {
         resetButtonText="איפוס"
         filterTitle="סינון"
       />
+
+      {/* Promotion Modal */}
+      {isPromotionModalVisible && selectedStorePromotions && (
+        <PromotionListModal
+          title="כל המבצעים"
+          visible={isPromotionModalVisible}
+          onClose={closePromotionModal}
+          onSelectPromotion={handlePromotionPress}
+          storeName={selectedStorePromotions.storeName}
+          chainId={selectedStorePromotions.chainId}
+          subChainId={selectedStorePromotions.subChainId}
+          storeId={selectedStorePromotions.storeId}
+          promotions={selectedStorePromotions.promotions}
+        />
+      )}
     </SafeAreaView>
   );
 }

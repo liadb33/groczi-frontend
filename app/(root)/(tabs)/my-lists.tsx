@@ -126,7 +126,7 @@ export default function MyListsScreen() {
     // Find the list to get its name
     const selectedList = lists.find(list => list.id === listId);
     router.push({
-      pathname: "../listInfo",
+      pathname: "/listInfo",
       params: { id: listId, name: selectedList?.name || 'רשימת קניות' }
     });
   };

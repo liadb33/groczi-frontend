@@ -4,7 +4,7 @@ import { addListItem, createList, deleteListItem, deleteLists, fetchListDetail, 
 import { mapCartResponseToCartItems } from "@/utils/mappers/cartMapper";
 import { create } from "zustand";
 import { fetchAllGroceries, fetchGroceryByItemCode, fetchStoresByGroceryItemCode, searchGroceries } from "@/utils/api/groceries";
-import { fetchPromotionsSummary } from "@/utils/api/promotions";
+import { fetchAllPromotions, fetchDiscountedGroceriesByPromotionId, fetchPromotionsByGroceryItemCode, fetchPromotionsByStore, fetchPromotionsGroupedByStore } from "@/utils/api/promotions";
 import { fetchAllStores } from "@/utils/api/stores";
 import { optimizeMultiStoreList, optimizeSingleStoreList } from "@/utils/api/optimization";
 
@@ -361,13 +361,14 @@ export const useListDetailsStore = create<ListDetailsStore>((set, get) => ({
 export const usePromotionsSummaryStore = create<PromotionsSummaryStore>(
   (set) => ({
     promotions: [],
+    discountedGroceries: [],
     isLoading: false,
     error: null,
 
-    fetchPromotions: async () => {
+    fetchAllPromotions: async () => {
       set({ isLoading: true, error: null });
       try {
-        const data = await fetchPromotionsSummary();
+        const data = await fetchAllPromotions();
         set({ promotions: data, isLoading: false });
       } catch (error: any) {
         set({
@@ -376,8 +377,71 @@ export const usePromotionsSummaryStore = create<PromotionsSummaryStore>(
         });
       }
     },
+
+    fetchDiscountedGroceries: async (
+      promotionId,
+      chainId,
+      subChainId,
+      storeId
+    ) => {
+      set({ isLoading: true, error: null });
+      try {
+        const data = await fetchDiscountedGroceriesByPromotionId(
+          promotionId,
+          chainId,
+          subChainId,
+          storeId
+        );
+        set({ discountedGroceries: data.groceries ?? [], isLoading: false });
+      } catch (error: any) {
+        set({
+          error: error.message ?? "Failed to fetch discounted groceries",
+          isLoading: false,
+        });
+      }
+    },
+
+    fetchPromotionsByStore: async (chainId, subChainId, storeId) => {
+      set({ isLoading: true, error: null });
+      try {
+        const data = await fetchPromotionsByStore(chainId, subChainId, storeId);
+        set({ promotions: data, isLoading: false });
+      } catch (error: any) {
+        set({
+          error: error.message ?? "Failed to fetch store promotions",
+          isLoading: false,
+        });
+      }
+    },
+
+    fetchPromotionsByGroceryItemCode: async (itemCode) => {
+      set({ isLoading: true, error: null });
+      try {
+        const data = await fetchPromotionsByGroceryItemCode(itemCode);
+        set({ promotions: data, isLoading: false });
+      } catch (error: any) {
+        set({
+          error: error.message ?? "Failed to fetch grocery promotions",
+          isLoading: false,
+        });
+      }
+    },
+
+    fetchPromotionsGroupedByStore: async () => {
+      set({ isLoading: true, error: null });
+      try {
+        const data = await fetchPromotionsGroupedByStore();
+        set({ promotions: data, isLoading: false });
+      } catch (error: any) {
+        set({
+          error: error.message ?? "Failed to fetch grouped promotions",
+          isLoading: false,
+        });
+      }
+    },
   })
 );
+
 
 
 // Stores's Store

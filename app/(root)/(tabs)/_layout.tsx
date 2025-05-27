@@ -71,7 +71,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="location" // Corresponds to specialScreen.tsx
+        name="location"
         options={{
           // THIS IS THE IMPORTANT PART: Hides it from the tab bar
           href: null,
@@ -79,24 +79,37 @@ export default function TabLayout() {
           // Optional: Set a title for the header if this screen should have one
           title: "מיקום",
           headerShown: true,
-          headerTitleAlign: 'center',
+          headerTitleAlign: "center",
           headerStyle: {
             backgroundColor: Colors[colorScheme ?? "light"].background,
           },
           headerShadowVisible: false,
           headerLeft: () => (
-            <TouchableOpacity 
-              onPress={() => router.navigate('/')}
-              className='ml-4 mt-1'
+            <TouchableOpacity
+              onPress={() => router.navigate("/")}
+              className="ml-4 mt-1"
             >
-              <ArrowLeft size={26} color={Colors[colorScheme ?? "light"].text} />
+              <ArrowLeft
+                size={26}
+                color={Colors[colorScheme ?? "light"].text}
+              />
             </TouchableOpacity>
           ),
           headerRight: () => (
-            <TouchableOpacity className='mr-4 mt-1' onPress={() => router.navigate('../settings')}>
+            <TouchableOpacity
+              className="mr-4 mt-1"
+              onPress={() => router.navigate("../settings")}
+            >
               <Settings size={26} color={Colors[colorScheme ?? "light"].text} />
             </TouchableOpacity>
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="listInfo"
+        options={{
+          // Hide from tab bar
+          href: null,
         }}
       />
     </Tabs>

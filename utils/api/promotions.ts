@@ -43,11 +43,11 @@ export const fetchPromotionsByGroceryItemCode = async (itemCode: string) => {
 };
 
 
-// GET /promotions/summary - fetch summarized promotions with up to 4 groceries per promotion
-export const fetchPromotionsSummary = async () => {
-  const res = await fetch(`${API_URL}/promotions/summary`);
+// GET /promotions/grouped-by-store - fetch promotions grouped by store
+export const fetchPromotionsGroupedByStore = async () => {
+  const res = await fetch(`${API_URL}/promotions/grouped-by-store`);
   if (!res.ok) {
-    throw new Error("Failed to fetch promotions summary");
+    throw new Error("Failed to fetch promotions grouped by store");
   }
   return res.json();
 };

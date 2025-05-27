@@ -2,28 +2,48 @@ import React, { useCallback, useEffect } from 'react';
 import { View, FlatList, ActivityIndicator, Text } from 'react-native';
 import AppHeader from '@/components/header/AppHeader';
 import GroceryResultCard from '@/components/grocery/GroceryResultCard';
-import { useGroceryStore } from '@/store';
+import { useGroceryStore, usePromotionsSummaryStore } from '@/store';
 import { useLocalSearchParams } from 'expo-router';
 
-
-
 const GroceryResultsScreen = () => {
-  const { searchQuery } = useLocalSearchParams<{ searchQuery: string }>();
-  const { groceries,groceriesResults, search, page, totalPages, isLoading } = useGroceryStore();
+  const { 
+    searchQuery, 
+    promotionId, 
+    chainId, 
+    subChainId, 
+    storeId 
+  } = useLocalSearchParams<{ 
+    searchQuery?: string;
+    promotionId?: string;
+    chainId?: string;
+    subChainId?: string;
+    storeId?: string;
+  }>();
 
-  // Load initial results when screen mounts or searchQuery changes
+  const { groceriesResults, search, page, totalPages, isLoading: groceryLoading } = useGroceryStore();
+  const { discountedGroceries, fetchDiscountedGroceries, isLoading: promotionLoading } = usePromotionsSummaryStore();
+
+  // Determine which mode we're in and what data to use
+  const isSearchMode = !!searchQuery;
+  const isPromotionMode = !!(promotionId && chainId && subChainId && storeId);
+  const currentData = isSearchMode ? groceriesResults : discountedGroceries;
+  const isLoading = isSearchMode ? groceryLoading : promotionLoading;
+
+  // Load initial results when screen mounts or params change
   useEffect(() => {
-    if (searchQuery) {
+    if (isSearchMode && searchQuery) {
       search(searchQuery, 1);
+    } else if (isPromotionMode) {
+      fetchDiscountedGroceries(promotionId!, chainId!, subChainId!, storeId!);
     }
-  }, [searchQuery, search]);
+  }, [searchQuery, promotionId, chainId, subChainId, storeId, search, fetchDiscountedGroceries, isSearchMode, isPromotionMode]);
 
-  // Load more results on scroll if not at last page and not currently loading
+  // Load more results on scroll (only for search mode since promotions don't have pagination)
   const loadMore = useCallback(() => {
-    if (!isLoading && page < totalPages) {
+    if (isSearchMode && !groceryLoading && page < totalPages && searchQuery) {
       search(searchQuery, page + 1);
     }
-  }, [isLoading, page, totalPages, searchQuery, search]);
+  }, [isSearchMode, groceryLoading, page, totalPages, searchQuery, search]);
 
   const renderFooter = () => {
     if (!isLoading) return null;
@@ -34,49 +54,61 @@ const GroceryResultsScreen = () => {
     );
   };
 
-  if (!searchQuery) {
+  // Determine header title based on mode
+  const headerTitle = isSearchMode ? "תוצאות חיפוש" : "מוצרים במבצע";
+
+  if (!isSearchMode && !isPromotionMode) {
     return (
       <View className="flex-1 justify-center items-center bg-gray-50">
-        <Text>אין מחרוזת חיפוש</Text>
+        <Text>פרמטרים חסרים</Text>
       </View>
     );
   }
 
   return (
     <View className="flex-1 bg-gray-50">
-      <AppHeader title="תוצאות" />
+      <AppHeader title={headerTitle} />
 
-      <FlatList
-        data={groceriesResults}
-        renderItem={({ item }) => (
-          <GroceryResultCard
-            key={item.itemCode}
-            itemCode={Number(item.itemCode)}
-            name={item.itemName || ""}
-            category={item.category || ""}
-            weight={item.unitQty || ""}
-            price={item.price || ""}
-            discount={"35%"} // TODO: get discount from backend
-            image={
-              "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            } // TODO: get image from backend
-            bookmarked={false} // TODO: get bookmarked from backend
-            onPress={() => console.log(`Pressed ${item.itemName}`)}
-            onAddToCart={() => console.log(`Added ${item.itemName} to cart`)}
-            onToggleBookmark={() =>
-              console.log(`Toggled bookmark for ${item.itemName}`)
-            }
-          />
-        )}
-        keyExtractor={(item) => item.itemCode}
-        numColumns={2}
-        columnWrapperStyle={{ justifyContent: "space-between" }}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={renderFooter}
-        contentContainerStyle={{ paddingHorizontal: 10, paddingTop: 10 }}
-      />
+      {isPromotionMode && currentData.length === 0 && !isLoading ? (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-gray-600 text-lg">
+           לא נמצאו מוצרים תחת קוד המבצע: {promotionId} 
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={currentData}
+          renderItem={({ item }) => (
+            <GroceryResultCard
+              key={item.itemCode}
+              itemCode={Number(item.itemCode)}
+              name={item.itemName || ""}
+              category={item.category || ""}
+              weight={item.unitQty || ""}
+              price={item.price || ""}
+              discount={"35%"}
+              image={
+                "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              }
+              bookmarked={false}
+              onPress={() => console.log(`Pressed ${item.itemName}`)}
+              onAddToCart={() => console.log(`Added ${item.itemName} to cart`)}
+              onToggleBookmark={() =>
+                console.log(`Toggled bookmark for ${item.itemName}`)
+              }
+            />
+          )}
+          keyExtractor={(item) => item.itemCode}
+          numColumns={2}
+          columnWrapperStyle={{ justifyContent: "space-between" }}
+          onEndReached={isSearchMode ? loadMore : undefined}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
+          contentContainerStyle={{ paddingHorizontal: 10, paddingTop: 10 }}
+        />
+      )}
     </View>
   );
 };
+
 export default GroceryResultsScreen;
