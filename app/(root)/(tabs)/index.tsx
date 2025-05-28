@@ -16,7 +16,7 @@ import GroceryAutocompleteInput from '@/components/grocery/GroceryAutoCompleteIn
 import PromotionCard from '@/components/promotions/PromotionCard';
 import PromotionListModal from '@/components/promotions/PromotionListModal';
 // Force RTL for the app
-I18nManager.forceRTL(true);
+
 
 const categories = [
   { id: 1, name: 'פירות', icon: 'fruit-cherries' },
@@ -24,30 +24,15 @@ const categories = [
   { id: 3, name: 'ירקות', icon: 'carrot' },
   { id: 4, name: 'משקאות', icon: 'glass-wine' },
   { id: 5, name: 'אפייה', icon: 'chef-hat' },
+  { id: 6, name: 'מוצרי חינוכי', icon: 'book-open-page-variant' },
+  { id: 7, name: 'חלב ומוצריו', icon: 'cow' },
+  { id: 8, name: 'דגים', icon: 'fish' },
+  { id: 9, name: 'קפואים', icon: 'snowflake' },
+  { id: 10, name: 'ממתקים', icon: 'candy' },
+  { id: 11, name: 'בריאות', icon: 'medical-bag' },
+  { id: 12, name: 'ניקיון', icon: 'spray-bottle' },
 ];
 
-const topGroceries = [
-  {
-    id: 1,
-    name: 'תפוז טרי',
-    category: 'פירות',
-    weight: '1 ק"ג',
-    price: '₪5',
-    discount: '35% הנחה',
-    image: 'https://images.unsplash.com/photo-1600423115367-87ea7661688f?ixlib=rb-1.2.1&auto=format&fit=crop&w=480&q=80',
-    bookmarked: true
-  },
-  {
-    id: 2,
-    name: 'בשר בקר',
-    category: 'בשרים',
-    weight: '500 גרם',
-    price: '₪12',
-    discount: '35% הנחה',
-    image: 'https://images.unsplash.com/photo-1588168333986-5078d3ae3976?ixlib=rb-1.2.1&auto=format&fit=crop&w=480&q=80',
-    bookmarked: false
-  },
-];
 
 // RTL-friendly styles
 const rtlStyles = StyleSheet.create({
@@ -81,9 +66,6 @@ interface DetailedGroceryItem {
 export default function HomeScreen() {
   // State for search query input
   const [searchQuery, setSearchQuery] = useState("");
-
-  // State to track bookmarked grocery items
-  const [bookmarkedItems, setBookmarkedItems] = useState(topGroceries);
 
   // Filter-related states
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]); // Default selected categories
@@ -180,15 +162,7 @@ export default function HomeScreen() {
   /**
    * Toggles the bookmark status of a grocery item
    */
-  const handleToggleBookmark = (groceryItem: any) => {
-    // Map through all items and toggle the bookmarked property of the matching item
-    const updatedItems = bookmarkedItems.map((item) =>
-      item.id === groceryItem.id
-        ? { ...item, bookmarked: !item.bookmarked }
-        : item
-    );
-    setBookmarkedItems(updatedItems);
-  };
+  
 
   /**
    * Navigates to the settings screen
@@ -213,6 +187,13 @@ export default function HomeScreen() {
    */
   const navigateToLocation = () => {
     router.push("/location");
+  };
+
+  /**
+   * Navigates to the barcode scanner screen
+   */
+  const navigateToBarcodeScanner = () => {
+    router.push("../barcodeScanner");
   };
 
   // Callbacks for dropdown state
@@ -376,6 +357,7 @@ export default function HomeScreen() {
             location={userAddress ?? "מחפש כתובת..."}
             onSettingsPress={navigateToSettings}
             onLocationPress={navigateToLocation}
+            onQRCodePress={navigateToBarcodeScanner}
             isRTL={true}
             locationLabel="מיקום"
           />
@@ -383,7 +365,7 @@ export default function HomeScreen() {
           {/* Search Input - now inside ScrollView */}
           <View 
             ref={searchBarRef}
-            className="relative z-10 mx-4 mt-2"
+            className="relative z-10 mx-4 mt-7"
             onLayout={() => {
               if (searchBarRef.current) {
                 searchBarRef.current.measure((x, y, width, height, pageX, pageY) => {
@@ -412,17 +394,13 @@ export default function HomeScreen() {
           </View>
 
           {/* Categories Section */}
-          <View className="px-6 mt-4 mb-2 flex flex-row-reverse justify-between items-center">
-            <TouchableOpacity>
-              <Text className="text-blue-600">הצג הכל</Text>
-            </TouchableOpacity>
-            <Text className="text-2xl font-bold">קטגוריות</Text>
+          <View className="px-6 mt-4 mb-2 flex flex-row  justify-between items-right">
+            <Text className="text-2x l font-bold">קטגוריות</Text>
           </View>
-
-          <CategoryList
+    
+          <CategoryList 
             categories={categories}
             onCategoryPress={handleCategoryPress}
-            isRTL={true}
           />
 
           {/* Top Groceries Section */}
