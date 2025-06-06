@@ -43,9 +43,15 @@ export const fetchPromotionsByGroceryItemCode = async (itemCode: string) => {
 };
 
 
-// GET /promotions/grouped-by-store - fetch promotions grouped by store
-export const fetchPromotionsGroupedByStore = async () => {
-  const res = await fetch(`${API_URL}/promotions/grouped-by-store`);
+// GET /promotions/grouped-by-store - fetch promotions near user
+export const fetchPromotionsGroupedByStore = async (
+  userLat: number,
+  userLon: number,
+  maxStoreDistance: number
+) => {
+  const url = `${API_URL}/promotions/grouped-by-store?lat=${userLat}&lon=${userLon}&maxStoreDistance=${maxStoreDistance}`;
+
+  const res = await fetch(url);
   if (!res.ok) {
     throw new Error("Failed to fetch promotions grouped by store");
   }

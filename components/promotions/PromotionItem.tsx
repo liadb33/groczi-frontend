@@ -2,6 +2,20 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { Clock } from "lucide-react-native";
 
+interface PromotionItemProps {
+  promotion: {
+    promotionId: string;
+    promotionName: string;
+    endDate: string;
+  };
+  isRTL: boolean;
+  onPromotionPress?: (promotion: {
+    promotionId: string;
+    promotionName: string;
+    endDate: string;
+  }) => void;
+}
+
 const PromotionItem: React.FC<PromotionItemProps> = ({ 
   promotion, 
   isRTL, 

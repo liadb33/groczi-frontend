@@ -7,6 +7,8 @@ import { useCartStore, useBookmarkStore } from '@/store';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from '@/utils/toastConfig/toastConfig';
 import AppHeader from '@/components/header/AppHeader';
+import GroceryCardShimmer from '@/components/ui/GroceryCardShimmer';
+import ShimmerContainer from '@/components/ui/ShimmerContainer';
 
 export default function MyGroceriesScreen() {
   const { bookmarks, loadBookmarks, removeFromBookmarks, isLoading } = useBookmarkStore();
@@ -72,8 +74,16 @@ export default function MyGroceriesScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#5382A6" />
+      <View className="flex-1 bg-gray-100">
+        <AppHeader title="מוצרים שלי" onBackPress={handleBackPress} />
+        <View className="flex-1 px-4">
+          <ShimmerContainer 
+            count={8}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          >
+            <GroceryCardShimmer />
+          </ShimmerContainer>
+        </View>
       </View>
     );
   }

@@ -72,19 +72,30 @@ export default function ListInfoScreen() {
       />
 
       {/* List content */}
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.itemCode}
-        renderItem={({ item }) => (
-          <CartItem
-            item={item}
-            onIncrease={() => updateItemQuantity(item.itemCode, 1)}
-            onDecrease={() => updateItemQuantity(item.itemCode, -1)}
-            onImagePress={handleImagePress}
-          />
-        )}
-        contentContainerStyle={{ paddingVertical: 16 }}
-      />
+      {items.length === 0 ? (
+        <View className="flex-1 justify-center items-center px-6">
+          <Text className="text-lg text-gray-600 font-medium text-center">
+            אין מוצרים ברשימה זו
+          </Text>
+          <Text className="text-sm text-gray-500 text-center mt-2">
+            הוסף מוצרים כדי להתחיל לבנות את הרשימה שלך
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={items}
+          keyExtractor={(item) => item.itemCode}
+          renderItem={({ item }) => (
+            <CartItem
+              item={item}
+              onIncrease={() => updateItemQuantity(item.itemCode, 1)}
+              onDecrease={() => updateItemQuantity(item.itemCode, -1)}
+              onImagePress={handleImagePress}
+            />
+          )}
+          contentContainerStyle={{ paddingVertical: 16 }}
+        />
+      )}
 
       {/* Floating Compare Prices Button */}
       {items.length > 0 && (

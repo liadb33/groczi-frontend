@@ -1,11 +1,12 @@
 import React from "react";
 import { View, Text, TouchableOpacity, I18nManager } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import PromotionItem from "./PromotionItem";
+import StoreImage from "./StoreImage";
+import PromotionLineItem from "./PromotionLineItem";
 
 export interface PromotionCardProps {
   storeName: string;
   storeAddress: string;
+  storeImageUrl?: string;
   chainId: string;
   subChainId: string;
   storeId: string;
@@ -28,6 +29,7 @@ export interface PromotionCardProps {
 export const PromotionCard: React.FC<PromotionCardProps> = ({
   storeName,
   storeAddress,
+  storeImageUrl,
   chainId,
   subChainId,
   storeId,
@@ -36,15 +38,17 @@ export const PromotionCard: React.FC<PromotionCardProps> = ({
   onPromotionPress,
 }) => {
   const isRTL = I18nManager.isRTL;
-  const maxVisiblePromotions = 4;
+  const maxVisiblePromotions = 3;
   const visiblePromotions = promotions.slice(0, maxVisiblePromotions);
 
-  const handlePromotionPress = (promotion: { promotionName: string; endDate: string; }) => {
-    // Find the full promotion data including promotionId
-    const fullPromotion = promotions.find(p => p.promotionName === promotion.promotionName);
-    if (fullPromotion && onPromotionPress) {
+  const handlePromotionPress = (promotion: {
+    promotionId: string;
+    promotionName: string;
+    endDate: string;
+  }) => {
+    if (onPromotionPress) {
       onPromotionPress({
-        ...fullPromotion,
+        ...promotion,
         chainId,
         subChainId,
         storeId,
@@ -54,7 +58,7 @@ export const PromotionCard: React.FC<PromotionCardProps> = ({
 
   return (
     <View
-      className="bg-white rounded-2xl shadow-sm mx-4 my-2 overflow-hidden"
+      className="bg-white rounded-2xl shadow-sm mx-4 my-2 p-4"
       style={{
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
@@ -62,75 +66,64 @@ export const PromotionCard: React.FC<PromotionCardProps> = ({
         elevation: 3,
       }}
     >
-      {/* Store Header */}
-      <View
-        className={`flex-row${
-          isRTL ? "-reverse" : ""
-        } justify-between items-center px-4 py-3 bg-white border-b border-gray-100`}
-      >
-        {/* Store icon, name, address */}
-        <View
-          className={`flex-row${isRTL ? "-reverse" : ""} items-center flex-1`}
-        >
-          <MaterialCommunityIcons
-            name="store"
-            size={20}
-            color="#333"
+      <View className={`flex-row${isRTL ? "-reverse" : ""} items-start`}>
+        {/* Store Image - Right side */}
+        <View className="ml-4">
+          <StoreImage
+            storeImageUrl={storeImageUrl}
+            storeName={storeName}
+            size="large"
           />
-          <View className="flex-1">
-            <Text
-              className={`text-lg font-bold text-gray-800 mr-2 ${
-                isRTL ? "text-right" : "text-left"
-              }`}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {storeName}
-            </Text>
-            <Text
-              className={`text-sm text-gray-600 mr-2 ${
-                isRTL ? "text-right" : "text-left"
-              }`}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {storeAddress}
-            </Text>
-          </View>
         </View>
 
-        {/* Chevron left icon */}
-        <MaterialCommunityIcons name="chevron-left" size={20} color="#666" />
-      </View>
-
-      {/* Promotions List */}
-      <View className="px-4">
-        {visiblePromotions.map((promotion, index) => (
-          <PromotionItem
-            key={index}
-            promotion={promotion}
-            isRTL={isRTL}
-            onPromotionPress={handlePromotionPress}
-          />
-        ))}
-      </View>
-
-      {/* Show More Button */}
-      {promotions.length > maxVisiblePromotions && (
-        <TouchableOpacity
-          onPress={onShowMorePress}
-          className="-mt-3 py-3 bg-white"
-          activeOpacity={0.7}
-        >
-          <View
-            className={`flex-row${
-              isRTL ? "-reverse" : ""
-            } justify-center items-center`}
+        {/* Content Section - Left side */}
+        <View className="flex-1">
+          {/* Store Name */}
+          <Text
+            className={`text-xl font-bold text-gray-900 mb-1 ${
+              isRTL ? "text-right" : "text-left"
+            }`}
+            numberOfLines={1}
+            ellipsizeMode="tail"
           >
-            <Text className="text-blue-600 font-medium text-base">הצג עוד</Text>
+            {storeName}
+          </Text>
+
+          {/* Store Address */}
+          <Text
+            className={`text-sm text-gray-600 mb-3 ${
+              isRTL ? "text-right" : "text-left"
+            }`}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {storeAddress}
+          </Text>
+
+          {/* Promotions List */}
+          <View className="mb-3">
+            {visiblePromotions.map((promotion, index) => (
+              <PromotionLineItem
+                key={promotion.promotionId || index}
+                promotion={promotion}
+                isRTL={isRTL}
+                onPromotionPress={handlePromotionPress}
+              />
+            ))}
           </View>
-        </TouchableOpacity>
-      )}
+
+          {/* Show More Button */}
+          {promotions.length > maxVisiblePromotions && (
+            <TouchableOpacity
+              onPress={onShowMorePress}
+              className="bg-blue-600 rounded-full py-2 px-4 self-start"
+              activeOpacity={0.8}
+            >
+              <Text className="text-white font-medium text-sm">הצג עוד</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
     </View>
   );
 };

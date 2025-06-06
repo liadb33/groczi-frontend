@@ -358,89 +358,95 @@ export const useListDetailsStore = create<ListDetailsStore>((set, get) => ({
 
 
 // Promotion Store
-export const usePromotionsSummaryStore = create<PromotionsSummaryStore>(
-  (set) => ({
-    promotions: [],
-    discountedGroceries: [],
-    isLoading: false,
-    error: null,
+export const usePromotionsSummaryStore = create<PromotionsSummaryStore>((set) => ({
+  promotions: [],
+  discountedGroceries: [],
+  isLoading: false,
+  error: null,
 
-    fetchAllPromotions: async () => {
-      set({ isLoading: true, error: null });
-      try {
-        const data = await fetchAllPromotions();
-        set({ promotions: data, isLoading: false });
-      } catch (error: any) {
-        set({
-          error: error.message ?? "Failed to fetch promotions",
-          isLoading: false,
-        });
-      }
-    },
+  fetchAllPromotions: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await fetchAllPromotions();
+      set({ promotions: data, isLoading: false });
+    } catch (error: any) {
+      set({
+        error: error.message ?? "Failed to fetch promotions",
+        isLoading: false,
+      });
+    }
+  },
 
-    fetchDiscountedGroceries: async (
-      promotionId,
-      chainId,
-      subChainId,
-      storeId
-    ) => {
-      set({ isLoading: true, error: null });
-      try {
-        const data = await fetchDiscountedGroceriesByPromotionId(
-          promotionId,
-          chainId,
-          subChainId,
-          storeId
-        );
-        set({ discountedGroceries: data.groceries ?? [], isLoading: false });
-      } catch (error: any) {
-        set({
-          error: error.message ?? "Failed to fetch discounted groceries",
-          isLoading: false,
-        });
-      }
-    },
+  fetchDiscountedGroceries: async (
+    promotionId,
+    chainId,
+    subChainId,
+    storeId
+  ) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await fetchDiscountedGroceriesByPromotionId(
+        promotionId,
+        chainId,
+        subChainId,
+        storeId
+      );
+      set({ discountedGroceries: data.groceries ?? [], isLoading: false });
+    } catch (error: any) {
+      set({
+        error: error.message ?? "Failed to fetch discounted groceries",
+        isLoading: false,
+      });
+    }
+  },
 
-    fetchPromotionsByStore: async (chainId, subChainId, storeId) => {
-      set({ isLoading: true, error: null });
-      try {
-        const data = await fetchPromotionsByStore(chainId, subChainId, storeId);
-        set({ promotions: data, isLoading: false });
-      } catch (error: any) {
-        set({
-          error: error.message ?? "Failed to fetch store promotions",
-          isLoading: false,
-        });
-      }
-    },
+  fetchPromotionsByStore: async (chainId, subChainId, storeId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await fetchPromotionsByStore(chainId, subChainId, storeId);
+      set({ promotions: data, isLoading: false });
+    } catch (error: any) {
+      set({
+        error: error.message ?? "Failed to fetch store promotions",
+        isLoading: false,
+      });
+    }
+  },
 
-    fetchPromotionsByGroceryItemCode: async (itemCode) => {
-      set({ isLoading: true, error: null });
-      try {
-        const data = await fetchPromotionsByGroceryItemCode(itemCode);
-        set({ promotions: data, isLoading: false });
-      } catch (error: any) {
-        set({
-          error: error.message ?? "Failed to fetch grocery promotions",
-          isLoading: false,
-        });
-      }
-    },
+  fetchPromotionsByGroceryItemCode: async (itemCode) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await fetchPromotionsByGroceryItemCode(itemCode);
+      set({ promotions: data, isLoading: false });
+    } catch (error: any) {
+      set({
+        error: error.message ?? "Failed to fetch grocery promotions",
+        isLoading: false,
+      });
+    }
+  },
 
-    fetchPromotionsGroupedByStore: async () => {
-      set({ isLoading: true, error: null });
-      try {
-        const data = await fetchPromotionsGroupedByStore();
-        set({ promotions: data, isLoading: false });
-      } catch (error: any) {
-        set({
-          error: error.message ?? "Failed to fetch grouped promotions",
-          isLoading: false,
-        });
-      }
-    },
-  })
-);
+  fetchPromotionsGroupedByStore: async (
+    userLat: number,
+    userLon: number,
+    maxStoreDistance: number
+  ) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await fetchPromotionsGroupedByStore(
+        userLat,
+        userLon,
+        maxStoreDistance
+      );
+      set({ promotions: data, isLoading: false });
+    } catch (error: any) {
+      set({
+        error: error.message ?? "Failed to fetch grouped promotions",
+        isLoading: false,
+      });
+    }
+  },
+}));
 
 
 

@@ -7,7 +7,6 @@ export const GroceryResultCard: React.FC<GroceryResultCardProps> = ({
   category,
   weight,
   price,
-  discount,
   image,
   bookmarked,
   onPress = () => {},
@@ -40,12 +39,7 @@ export const GroceryResultCard: React.FC<GroceryResultCardProps> = ({
             style={{ borderTopLeftRadius: 18, borderTopRightRadius: 18 }}
           />
 
-          {/* Discount Badge - now on the left */}
-          <View className="absolute top-3 left-3 bg-green-500 px-2 py-0.5 rounded-md">
-            <Text className="text-white text-xs font-bold">{discount}</Text>
-          </View>
-
-          {/* Bookmark Icon - now on the right */}
+          {/* Bookmark Icon */}
           <View className="absolute top-3 right-3 rounded-full w-8 h-8">
             <TouchableOpacity
               className="flex items-center justify-center w-full h-full bg-white rounded-full shadow-sm"

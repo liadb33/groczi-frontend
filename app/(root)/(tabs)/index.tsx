@@ -10,11 +10,12 @@ import * as Location from 'expo-location';
 // Import our new components
 import CategoryList from '@/components/grocery/CategoryList';
 import LocationHeader from '@/components/header/LocationHeader';
-import { useLocationStore, usePromotionsSummaryStore } from '@/store';
+import { useLocationStore, usePromotionsSummaryStore, useSettingsStore } from '@/store';
 import FilterModal from '@/components/filter/FilterModal';
 import GroceryAutocompleteInput from '@/components/grocery/GroceryAutoCompleteInput';
 import PromotionCard from '@/components/promotions/PromotionCard';
 import PromotionListModal from '@/components/promotions/PromotionListModal';
+import ShimmerCard from '@/components/ui/ShimmerCard';
 // Force RTL for the app
 
 
@@ -74,9 +75,11 @@ export default function HomeScreen() {
   const [isFilterOpen, setIsFilterOpen] = useState(false); // Track if filter modal is open
 
   // States for location
-  const {setUserLocation,setDestinationLocation } = useLocationStore();
+  const {setUserLocation,setDestinationLocation, userLatitude, userLongitude } = useLocationStore();
   const [hasPermission, setHasPermission] = useState(false);
+  const [locationError, setLocationError] = useState(false);
   const { promotions, isLoading, error, fetchPromotionsGroupedByStore } = usePromotionsSummaryStore();
+  const { maxStoreDistance } = useSettingsStore();
 
   // New state to control ScrollView scrollability
   const [scrollEnabled, setScrollEnabled] = useState(true);
@@ -96,9 +99,12 @@ export default function HomeScreen() {
     promotions: Array<{ promotionId: string; promotionName: string; endDate: string }>;
   } | null>(null);
 
+  // Fetch promotions only after location is retrieved
   useEffect(() => {
-    fetchPromotionsGroupedByStore();
-  }, []);
+    if (userLatitude && userLongitude && !locationError) {
+      fetchPromotionsGroupedByStore(userLatitude, userLongitude, maxStoreDistance);
+    }
+  }, [userLatitude, userLongitude, maxStoreDistance, locationError]);
 
   /**
    * Opens the filter modal
@@ -291,46 +297,56 @@ export default function HomeScreen() {
   // Retrieve location from user
   useEffect(() => {
     const requestLocation = async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-
-      if (status !== "granted") {
-        setHasPermission(false);
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync();
-      const { latitude, longitude } = location.coords;
-
-      const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&language=he&key=${GOOGLE_MAPS_API_KEY}`;
-
       try {
-        const response = await fetch(geocodeUrl);
-        const data = await response.json();
+        let { status } = await Location.requestForegroundPermissionsAsync();
 
-        const components = data.results?.[0]?.address_components || [];
-        const cityComp = components.find((comp: any) =>
-          comp.types.includes("locality")
-        );
-        const countryComp = components.find((comp: any) =>
-          comp.types.includes("country")
-        );
+        if (status !== "granted") {
+          setHasPermission(false);
+          setLocationError(true);
+          return;
+        }
 
-        const city = cityComp ? cityComp.long_name : "";
-        const country = countryComp ? countryComp.long_name : "";
+        setHasPermission(true);
+        let location = await Location.getCurrentPositionAsync();
+        const { latitude, longitude } = location.coords;
 
-        setUserLocation({
-          latitude,
-          longitude,
-          address: city && country ? `${city}, ${country}` : "כתובת לא זמינה",
-        });
+        const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&language=he&key=${GOOGLE_MAPS_API_KEY}`;
+
+        try {
+          const response = await fetch(geocodeUrl);
+          const data = await response.json();
+
+          const components = data.results?.[0]?.address_components || [];
+          const cityComp = components.find((comp: any) =>
+            comp.types.includes("locality")
+          );
+          const countryComp = components.find((comp: any) =>
+            comp.types.includes("country")
+          );
+
+          const city = cityComp ? cityComp.long_name : "";
+          const country = countryComp ? countryComp.long_name : "";
+
+          setUserLocation({
+            latitude,
+            longitude,
+            address: city && country ? `${city}, ${country}` : "כתובת לא זמינה",
+          });
+          setLocationError(false);
+        } catch (error) {
+          console.error("Failed to fetch address from Google:", error);
+          setUserLocation({
+            latitude,
+            longitude,
+            address: "כתובת לא זמינה",
+          });
+          setLocationError(false);
+        }
       } catch (error) {
-        console.error("Failed to fetch address from Google:", error);
-        setUserLocation({
-          latitude,
-          longitude,
-          address: "כתובת לא זמינה",
-        });
+        console.error("Failed to get location:", error);
+        setLocationError(true);
+        setHasPermission(false);
       }
     };
 
@@ -395,7 +411,7 @@ export default function HomeScreen() {
 
           {/* Categories Section */}
           <View className="px-6 mt-4 mb-2 flex flex-row  justify-between items-right">
-            <Text className="text-2x l font-bold">קטגוריות</Text>
+            <Text className="text-2xl font-bold">קטגוריות</Text>
           </View>
     
           <CategoryList 
@@ -408,20 +424,51 @@ export default function HomeScreen() {
             <TouchableOpacity>
               <Text className="text-blue-600">הצג הכל</Text>
             </TouchableOpacity>
-            <Text className="text-2xl font-bold">מבצעים חמים</Text>
+            <Text className="text-2xl font-bold">מבצעים חמים באזורך</Text>
           </View>
 
           {/* Grocery Items */}
-          {isLoading ? (
-            <Text className="text-center my-4 text-gray-500">
-              טוען מבצעים...
-            </Text>
+          {locationError ? (
+            <View className="px-6 my-8">
+              <Text className="text-center text-lg text-gray-600 font-medium">
+                לא הצלחנו למצוא מבצעים באזורך
+              </Text>
+              <Text className="text-center text-sm text-gray-500 mt-2">
+                אנא ודא שהגישה למיקום מופעלת ונסה שוב
+              </Text>
+            </View>
+          ) : !userLatitude || !userLongitude ? (
+            // Show shimmer loading while waiting for location
+            <View>
+              {[1, 2, 3, 4].map((index) => (
+                <ShimmerCard key={index} />
+              ))}
+            </View>
+          ) : isLoading ? (
+            // Show shimmer loading while fetching promotions
+            <View>
+              {[1, 2, 3, 4].map((index) => (
+                <ShimmerCard key={index} />
+              ))}
+            </View>
           ) : error ? (
-            <Text className="text-center my-4 text-red-600">{error}</Text>
+            <View className="px-6 my-8">
+              <Text className="text-center text-lg text-gray-600 font-medium">
+                לא הצלחנו למצוא מבצעים באזורך
+              </Text>
+              <Text className="text-center text-sm text-gray-500 mt-2">
+                נסה שוב מאוחר יותר
+              </Text>
+            </View>
           ) : promotions.length === 0 ? (
-            <Text className="text-center my-4 text-gray-500">
-              אין מבצעים זמינים
-            </Text>
+            <View className="px-6 my-8">
+              <Text className="text-center text-lg text-gray-600 font-medium">
+                אין מבצעים זמינים באזורך
+              </Text>
+              <Text className="text-center text-sm text-gray-500 mt-2">
+                בדוק שוב מאוחר יותר למבצעים חדשים
+              </Text>
+            </View>
           ) : (
             promotions.map((store, idx) => (
               <PromotionCard

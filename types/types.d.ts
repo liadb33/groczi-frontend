@@ -214,7 +214,6 @@ declare interface GroceryResultCardProps {
   category: string;
   weight: string;
   price: string;
-  discount: string;
   image: string;
   bookmarked: boolean;
   onAddToCart?: () => void;
@@ -372,7 +371,11 @@ declare interface PromotionsSummaryStore {
     storeId: string
   ) => Promise<void>;
   fetchPromotionsByGroceryItemCode: (itemCode: string) => Promise<void>;
-  fetchPromotionsGroupedByStore: () => Promise<void>;
+  fetchPromotionsGroupedByStore: (
+    userLat: number,
+    userLon: number,
+    maxStoreDistance: number
+  ) => Promise<void>;
 }
 
 // Store Types

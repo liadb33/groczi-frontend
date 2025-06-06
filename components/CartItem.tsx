@@ -27,7 +27,7 @@ const CartItem: React.FC<CartItemProps> = ({
         </Text>
         <TouchableOpacity
           onPress={() => onIncrease(item.id)}
-          className="p-1.5 rounded-full ml-2 bg-[#5382A6]"
+          className="p-1.5 rounded-full ml-2 bg-blue-600"
         >
           <Feather name="plus" size={18} color="white" />
         </TouchableOpacity>

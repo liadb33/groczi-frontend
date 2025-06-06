@@ -14,6 +14,8 @@ import { ListFooter } from '@/components/lists/ListFooter';
 import { ListsHeader } from '@/components/lists/ListsHeader';
 import { ListItem } from '@/components/lists/ListsItem';
 import { useListStore } from '@/store';
+import ListItemShimmer from '@/components/ui/ListItemShimmer';
+import ShimmerContainer from '@/components/ui/ShimmerContainer';
 
 
 export default function MyListsScreen() {
@@ -133,8 +135,26 @@ export default function MyListsScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#5382A6" />
+      <View className="flex-1 bg-gray-50">
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor="transparent"
+          translucent={true}
+        />
+        <ListsHeader
+          isEditMode={false}
+          selectedListIds={[]}
+          onToggleEditMode={() => {}}
+          onNavigateBack={handleNavigateBack}
+          onAddList={handleAddList}
+          onDeleteSelected={() => {}}
+        />
+        <ShimmerContainer 
+          count={6}
+          contentContainerStyle={{ paddingBottom: 20, paddingTop: 10 }}
+        >
+          <ListItemShimmer />
+        </ShimmerContainer>
       </View>
     );
   }

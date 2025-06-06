@@ -15,6 +15,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useCartStore } from '@/store';
 import { useOptimizationStore } from '@/store';
 import AppHeader from '@/components/header/AppHeader';
+import CartItemShimmer from '@/components/ui/CartItemShimmer';
+import ShimmerContainer from '@/components/ui/ShimmerContainer';
 
 // --- Main Cart Screen Component ---
 export default function CartScreen() {
@@ -54,8 +56,14 @@ export default function CartScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#5382A6" />
+      <View className="flex-1 bg-gray-50">
+        <AppHeader title="עגלה" />
+        <ShimmerContainer 
+          count={6}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
+          <CartItemShimmer />
+        </ShimmerContainer>
       </View>
     );
   }
@@ -86,7 +94,7 @@ export default function CartScreen() {
             className="rounded-full overflow-hidden"
           >
             <LinearGradient
-              colors={["#5382A6", "#08263E"]}
+              colors={["#2563EB", "#1D4ED8"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
               className="py-3 items-center justify-center rounded-full"
