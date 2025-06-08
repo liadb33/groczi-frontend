@@ -23,7 +23,7 @@ export default function MyGroceriesScreen() {
   }, []);
 
   // Handler for navigating to the grocery info screen
-  const handleImagePress = (item: SavedGroceryItemType) => {
+  const handleCardPress = (item: SavedGroceryItemType) => {
     router.push({
       pathname: "../groceryInfo",
       params: { id: item.itemCode }
@@ -42,7 +42,7 @@ export default function MyGroceriesScreen() {
     <GrocerySavedCard
       item={item}
       onAddToCart={() => handleAddToCart(item)}
-      onImagePress={handleImagePress}
+      onImagePress={handleCardPress}
     />
   );
 

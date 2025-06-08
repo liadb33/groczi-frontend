@@ -420,10 +420,10 @@ export default function HomeScreen() {
           />
 
           {/* Top Groceries Section */}
-          <View className="px-6 mt-4 mb-5 flex flex-row-reverse justify-between items-center">
-            <TouchableOpacity>
+          <View className="px-6 mt-4 mb-5 flex flex-row justify-between items-center">
+            {/* <TouchableOpacity>
               <Text className="text-blue-600">הצג הכל</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             <Text className="text-2xl font-bold">מבצעים חמים באזורך</Text>
           </View>
 

@@ -183,6 +183,7 @@ declare interface CartItemProps {
   onIncrease: (itemId: string) => void;
   onDecrease: (itemId: string) => void;
   onImagePress: (itemId: string) => void;
+  onPress?: (item: CartItemType) => void;
 }
 
 

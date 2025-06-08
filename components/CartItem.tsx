@@ -7,13 +7,18 @@ const CartItem: React.FC<CartItemProps> = ({
   onIncrease,
   onDecrease,
   onImagePress,
+  onPress,
 }) => {
 
 
   const displayPrice = item.price ?? parseFloat(item.subtotal ?? "0");
 
   return (
-    <View className="bg-white rounded-lg shadow-md p-3 mb-3 mx-4 flex-row justify-between">
+    <TouchableOpacity 
+      className="bg-white rounded-lg shadow-md p-3 mb-3 mx-4 flex-row justify-between"
+      onPress={() => onPress?.(item)}
+      activeOpacity={0.7}
+    >
       {/* Left Side - Quantity Controls */}
       <View className="flex-row items-center">
         <TouchableOpacity
@@ -36,16 +41,13 @@ const CartItem: React.FC<CartItemProps> = ({
       {/* Right Side - Product Details */}
       <View className="flex-row-reverse flex-1 items-center">
         {/* Image */}
-        <TouchableOpacity
-          onPress={() => onImagePress(item.id)}
-          className="ml-3"
-        >
+        <View className="ml-3">
           <Image
             source={{ uri: item.imageUrl }}
             className="w-16 h-16 rounded-lg"
             resizeMode="cover"
           />
-        </TouchableOpacity>
+        </View>
 
         {/* Details */}
         <View className="flex-1 ml-2 items-start" style={{ direction: "rtl" }}>
@@ -67,7 +69,7 @@ const CartItem: React.FC<CartItemProps> = ({
           </Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image, Linking, Platform } from "react-native";
 import Map from "@/components/Map";
 import GoogleTextInput from "@/components/GoogleTextInput";
 import { useLocationStore } from "@/store";
@@ -21,7 +21,18 @@ const Location = () => {
     setDestinationLocation({ latitude, longitude, address });
   };
 
-  
+  // Function to open system navigation chooser
+  const openNavigationChooser = (latitude: number, longitude: number, address: string) => {
+    // Use the platform-specific Google Maps URL that will trigger the system chooser
+    const googleMapsUrl = Platform.OS === 'ios' 
+      ? `comgooglemaps://?daddr=${latitude},${longitude}&directionsmode=driving`
+      : `google.navigation:q=${latitude},${longitude}`;
+    
+    // This will directly open the system navigation chooser
+    Linking.openURL(googleMapsUrl).catch(error => {
+      console.error('Error opening navigation:', error);
+    });
+  };
 
   return (
     <View className="flex-1">
@@ -74,11 +85,13 @@ const Location = () => {
           <TouchableOpacity
             className="bg-blue-500 py-3 rounded-lg items-center"
             onPress={() => {
-              setDestinationLocation({
-                latitude: selectedMarker.Latitude ?? 0,
-                longitude: selectedMarker.Longitude ?? 0,
-                address: selectedMarker.Address ?? "",
-              });
+              if (selectedMarker?.Latitude && selectedMarker?.Longitude) {
+                openNavigationChooser(
+                  selectedMarker.Latitude,
+                  selectedMarker.Longitude,
+                  selectedMarker.Address ?? ""
+                );
+              }
             }}
           >
             <Text className="text-white font-medium">ניווט</Text>

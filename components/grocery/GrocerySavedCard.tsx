@@ -10,15 +10,17 @@ const GrocerySavedCard: React.FC<GrocerySavedCardProps> = ({
   const formattedQuantity = item.quantity.toString() + " " + item.unitQty;
   
   return (
-    <View className="flex-row-reverse bg-white p-4 rounded-lg mb-2 shadow-sm border border-gray-100">
+    <TouchableOpacity 
+      className="flex-row-reverse bg-white p-4 rounded-lg mb-2 shadow-sm border border-gray-100"
+      onPress={() => onImagePress(item)}
+      activeOpacity={0.8}
+    >
       {/* Right: Image */}
-      <TouchableOpacity onPress={() => onImagePress(item)}>
-        <Image
-          source={{ uri: item.imageUrl }}
-          className="w-20 h-20 rounded-lg"
-          resizeMode="cover"
-        />
-      </TouchableOpacity>
+      <Image
+        source={{ uri: item.imageUrl }}
+        className="w-20 h-20 rounded-lg"
+        resizeMode="cover"
+      />
 
       {/* Center: Item details */}
       <View className="flex-1 justify-center mr-4">
@@ -41,7 +43,7 @@ const GrocerySavedCard: React.FC<GrocerySavedCardProps> = ({
           <Text className="text-white font-medium">הוסף לעגלה</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

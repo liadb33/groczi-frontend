@@ -35,6 +35,14 @@ export default function CartScreen() {
     console.log('Image pressed for item:', itemId);
   };
 
+  const handleCardPress = (item: CartItemType) => {
+    router.push({
+      pathname: "../groceryInfo",
+      params: { id: item.itemCode }
+    });
+    console.log(`Navigating to grocery info for ${item.name}`);
+  };
+
   const handleComparePrices = () => {
     setGroceries(cartItems.map(item => ({
       itemCode: item.itemCode,
@@ -50,7 +58,8 @@ export default function CartScreen() {
       item={item}
       onIncrease={() => incrementQuantity(item.id)}
       onDecrease={() => decrementQuantity(item.id)}
-      onImagePress={handleImagePress} 
+      onImagePress={handleImagePress}
+      onPress={handleCardPress}
     />
   );
 
