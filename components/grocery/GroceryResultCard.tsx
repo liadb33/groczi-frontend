@@ -31,12 +31,16 @@ export const GroceryResultCard: React.FC<GroceryResultCardProps> = ({
         }}
       >
         {/* Image section */}
-        <View className="relative">
+        <View className="relative bg-[#E6F0FB]" style={{ borderTopLeftRadius: 18, borderTopRightRadius: 18 }}>
           <Image
             source={{ uri: image }}
-            className="h-[120px] bg-[#E6F0FB]"
-            resizeMode="cover"
-            style={{ borderTopLeftRadius: 18, borderTopRightRadius: 18 }}
+            className="h-[120px] w-full"
+            resizeMode="contain"
+            style={{ 
+              borderTopLeftRadius: 18, 
+              borderTopRightRadius: 18,
+              backgroundColor: 'transparent'
+            }}
           />
 
           {/* Bookmark Icon */}

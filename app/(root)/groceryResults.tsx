@@ -2,10 +2,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { View, FlatList, ActivityIndicator, Text } from 'react-native';
 import AppHeader from '@/components/header/AppHeader';
 import GroceryResultCard from '@/components/grocery/GroceryResultCard';
-import { useGroceryStore, usePromotionsSummaryStore, useCartStore, useBookmarkStore } from '@/store';
+import { useGroceryStore, usePromotionsSummaryStore, useCartStore, useBookmarkStore, useCategoryStore } from '@/store';
 import { useLocalSearchParams, router } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from '@/utils/toastConfig/toastConfig';
+import { PLACEHOLDER_IMAGE } from '@/constants/Placeholders';
+import GroceryResultCardShimmer from '@/components/ui/GroceryResultCardShimmer';
+import ShimmerContainer from '@/components/ui/ShimmerContainer';
 
 const GroceryResultsScreen = () => {
   const { 
@@ -13,17 +16,24 @@ const GroceryResultsScreen = () => {
     promotionId, 
     chainId, 
     subChainId, 
-    storeId 
+    storeId,
+    categoryName,
+    categories,
+    isMultiCategory
   } = useLocalSearchParams<{ 
     searchQuery?: string;
     promotionId?: string;
     chainId?: string;
     subChainId?: string;
     storeId?: string;
+    categoryName?: string;
+    categories?: string;
+    isMultiCategory?: string;
   }>();
 
   const { groceriesResults, search, page, totalPages, isLoading: groceryLoading } = useGroceryStore();
   const { discountedGroceries, fetchDiscountedGroceries, isLoading: promotionLoading } = usePromotionsSummaryStore();
+  const { groceries: categoryGroceries, fetchGroceriesByCategory, page: categoryPage, totalPages: categoryTotalPages, isLoading: categoryLoading } = useCategoryStore();
   const { addToCart, cartItems } = useCartStore();
   const { addToBookmarks, removeFromBookmarks, bookmarks } = useBookmarkStore();
   const [pendingAddItemCode, setPendingAddItemCode] = useState<string | null>(null);
@@ -31,8 +41,22 @@ const GroceryResultsScreen = () => {
   // Determine which mode we're in and what data to use
   const isSearchMode = !!searchQuery;
   const isPromotionMode = !!(promotionId && chainId && subChainId && storeId);
-  const currentData = isSearchMode ? groceriesResults : discountedGroceries;
-  const isLoading = isSearchMode ? groceryLoading : promotionLoading;
+  const isCategoryMode = !!categoryName;
+  const isMultiCategoryMode = !!(categories && isMultiCategory === "true");
+  
+  const currentData = isSearchMode ? groceriesResults : 
+                      isPromotionMode ? discountedGroceries : 
+                      (isCategoryMode || isMultiCategoryMode) ? categoryGroceries : [];
+  
+  const isLoading = isSearchMode ? groceryLoading : 
+                    isPromotionMode ? promotionLoading : 
+                    (isCategoryMode || isMultiCategoryMode) ? categoryLoading : false;
+  
+  const currentPage = isSearchMode ? page : 
+                      (isCategoryMode || isMultiCategoryMode) ? categoryPage : 1;
+  
+  const currentTotalPages = isSearchMode ? totalPages : 
+                            (isCategoryMode || isMultiCategoryMode) ? categoryTotalPages : 1;
 
   // Load initial results when screen mounts or params change
   useEffect(() => {
@@ -40,15 +64,25 @@ const GroceryResultsScreen = () => {
       search(searchQuery, 1);
     } else if (isPromotionMode) {
       fetchDiscountedGroceries(promotionId!, chainId!, subChainId!, storeId!);
+    } else if (isCategoryMode && categoryName) {
+      fetchGroceriesByCategory([categoryName], 1);
+    } else if (isMultiCategoryMode && categories) {
+      const categoryArray = categories.split("|");
+      fetchGroceriesByCategory(categoryArray, 1);
     }
-  }, [searchQuery, promotionId, chainId, subChainId, storeId, search, fetchDiscountedGroceries, isSearchMode, isPromotionMode]);
+  }, [searchQuery, promotionId, chainId, subChainId, storeId, categoryName, categories, search, fetchDiscountedGroceries, fetchGroceriesByCategory, isSearchMode, isPromotionMode, isCategoryMode, isMultiCategoryMode]);
 
-  // Load more results on scroll (only for search mode since promotions don't have pagination)
+  // Load more results on scroll (for search and category modes with pagination)
   const loadMore = useCallback(() => {
-    if (isSearchMode && !groceryLoading && page < totalPages && searchQuery) {
-      search(searchQuery, page + 1);
+    if (isSearchMode && !groceryLoading && currentPage < currentTotalPages && searchQuery) {
+      search(searchQuery, currentPage + 1);
+    } else if (isCategoryMode && !categoryLoading && currentPage < currentTotalPages && categoryName) {
+      fetchGroceriesByCategory([categoryName], currentPage + 1);
+    } else if (isMultiCategoryMode && !categoryLoading && currentPage < currentTotalPages && categories) {
+      const categoryArray = categories.split("|");
+      fetchGroceriesByCategory(categoryArray, currentPage + 1);
     }
-  }, [isSearchMode, groceryLoading, page, totalPages, searchQuery, search]);
+  }, [isSearchMode, isCategoryMode, isMultiCategoryMode, groceryLoading, categoryLoading, currentPage, currentTotalPages, searchQuery, categoryName, categories, search, fetchGroceriesByCategory]);
 
   // Handler for adding items to cart
   const handleAddToCart = async (item: any) => {
@@ -124,12 +158,43 @@ const GroceryResultsScreen = () => {
   };
 
   // Determine header title based on mode
-  const headerTitle = isSearchMode ? "תוצאות חיפוש" : "מוצרים במבצע";
+  const headerTitle = isSearchMode ? "תוצאות חיפוש" : 
+                      isPromotionMode ? "מוצרים במבצע" : 
+                      isCategoryMode ? `${categoryName}` :
+                      isMultiCategoryMode ? `קטגוריות נבחרות (${categories?.split("|").length})` : "תוצאות";
 
-  if (!isSearchMode && !isPromotionMode) {
+  if (!isSearchMode && !isPromotionMode && !isCategoryMode && !isMultiCategoryMode) {
     return (
       <View className="flex-1 justify-center items-center bg-gray-50">
         <Text>פרמטרים חסרים</Text>
+      </View>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-gray-50">
+        <AppHeader title={headerTitle} />
+        <View style={{ paddingHorizontal: 10, paddingTop: 10 }}>
+          {/* Create 3 rows of 2 shimmer cards each */}
+          {Array.from({ length: 3 }, (_, rowIndex) => (
+            <View 
+              key={`shimmer-row-${rowIndex}`} 
+              style={{ 
+                flexDirection: 'row', 
+                justifyContent: 'space-between',
+                width: '100%'
+              }}
+            >
+              <View style={{ width: '48%' }}>
+                <GroceryResultCardShimmer />
+              </View>
+              <View style={{ width: '48%' }}>
+                <GroceryResultCardShimmer />
+              </View>
+            </View>
+          ))}
+        </View>
       </View>
     );
   }
@@ -138,10 +203,15 @@ const GroceryResultsScreen = () => {
     <View className="flex-1 bg-gray-50">
       <AppHeader title={headerTitle} />
 
-      {isPromotionMode && currentData.length === 0 && !isLoading ? (
+      {((isPromotionMode && currentData.length === 0 && !isLoading) || 
+        (isCategoryMode && currentData.length === 0 && !isLoading) ||
+        (isMultiCategoryMode && currentData.length === 0 && !isLoading)) ? (
         <View className="flex-1 justify-center items-center">
           <Text className="text-gray-600 text-lg">
-           לא נמצאו מוצרים תחת קוד המבצע: {promotionId} 
+            {isPromotionMode ? `לא נמצאו מוצרים תחת קוד המבצע: ${promotionId}` : 
+             isCategoryMode ? `לא נמצאו מוצרים בקטגוריה: ${categoryName}` : 
+             isMultiCategoryMode ? "לא נמצאו מוצרים בקטגוריות הנבחרות" :
+             "לא נמצאו מוצרים"}
           </Text>
         </View>
       ) : (
@@ -156,7 +226,7 @@ const GroceryResultsScreen = () => {
               weight={item.unitQty || ""}
               price={item.price || ""}
               image={
-                "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                item.imageUrl ?? PLACEHOLDER_IMAGE
               }
               bookmarked={isItemBookmarked(item.itemCode.toString())}
               onPress={() => handlePress(item)}
@@ -167,7 +237,7 @@ const GroceryResultsScreen = () => {
           keyExtractor={(item) => item.itemCode}
           numColumns={2}
           columnWrapperStyle={{ justifyContent: "space-between" }}
-          onEndReached={isSearchMode ? loadMore : undefined}
+          onEndReached={(isSearchMode || isCategoryMode || isMultiCategoryMode) ? loadMore : undefined}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
           contentContainerStyle={{ paddingHorizontal: 10, paddingTop: 10 }}

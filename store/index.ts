@@ -7,6 +7,7 @@ import { fetchAllGroceries, fetchGroceryByItemCode, fetchStoresByGroceryItemCode
 import { fetchAllPromotions, fetchDiscountedGroceriesByPromotionId, fetchPromotionsByGroceryItemCode, fetchPromotionsByStore, fetchPromotionsGroupedByStore } from "@/utils/api/promotions";
 import { fetchAllStores } from "@/utils/api/stores";
 import { optimizeMultiStoreList, optimizeSingleStoreList } from "@/utils/api/optimization";
+import { fetchAllCategories, fetchGroceriesByCategories, fetchGroceriesCountByCategory } from "@/utils/api/categories";
 
 export const useLocationStore = create<LocationStore>((set) => ({
   userLatitude: null,
@@ -512,4 +513,60 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
   setMaxStoreDistance: (val) => set({ maxStoreDistance: val }),
   setMaxStores: (val) => set({ maxStores: val }),
   setMaxTravelDistance: (val) => set({ maxTravelDistance: val }),
+}));
+
+export const useCategoryStore = create<CategoryStore>((set) => ({
+  categories: [],
+  selectedCategories: [],
+  groceries: [],
+  page: 1,
+  totalPages: 1,
+  isLoading: false,
+  error: null,
+  groceryCountByCategory: null,
+
+  fetchCategories: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await fetchAllCategories();
+      console.log("res");
+      set({ categories: res.data, isLoading: false });
+    } catch (err: any) {
+      set({
+        error: err.message ?? "Failed to fetch categories",
+        isLoading: false,
+      });
+    }
+  },
+
+  fetchGroceriesByCategory: async (categories, page = 1, limit = 10) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await fetchGroceriesByCategories(categories, page, limit);
+      set({
+        groceries: res.data,
+        page: res.page,
+        totalPages: res.totalPages,
+        selectedCategories: categories,
+        isLoading: false,
+      });
+    } catch (err: any) {
+      set({
+        error: err.message ?? "Failed to fetch groceries",
+        isLoading: false,
+      });
+    }
+  },
+  fetchGroceryCountByCategory: async (category) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await fetchGroceriesCountByCategory(category);
+      set({ groceryCountByCategory: res.count, isLoading: false });
+    } catch (err: any) {
+      set({
+        error: err.message ?? "Failed to fetch grocery count",
+        isLoading: false,
+      });
+    }
+  },
 }));

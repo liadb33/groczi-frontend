@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import Modal from 'react-native-modal';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useCategoryStore } from '@/store';
+import { router } from 'expo-router';
 
 // RTL styles
 const rtlStyles = StyleSheet.create({
@@ -20,7 +22,7 @@ const rtlStyles = StyleSheet.create({
 interface FilterModalProps {
   isVisible: boolean;
   onClose: () => void;
-  onApply: () => void;
+  onApply?: () => void; // Make optional since we'll handle navigation internally
   onReset: () => void;
   selectedCategories: string[];
   toggleCategorySelection: (category: string) => void;
@@ -35,11 +37,6 @@ interface FilterModalProps {
   filterTitle?: string;
 }
 
-const defaultCategories = [
-  "Fruits", "Meats", "Vegetables", "Beacon", "Drinks",
-  "Protein", "Beverages", "Cereal",
-];
-
 const FilterModal: React.FC<FilterModalProps> = ({
   isVisible,
   onClose,
@@ -49,18 +46,40 @@ const FilterModal: React.FC<FilterModalProps> = ({
   toggleCategorySelection,
   priceRange,
   selectedCompany,
-  availableCategories = defaultCategories, // Use default or passed categories
+  availableCategories, // Optional override, otherwise use store
   isRTL = false,
   applyButtonText = "Apply",
   resetButtonText = "Reset",
   filterTitle = "Filter By",
 }) => {
-  const hebrewCategories = isRTL ? [
-    "פירות", "בשרים", "ירקות", "בייקון", "משקאות",
-    "חלבון", "שתייה", "דגנים",
-  ] : defaultCategories;
+  const { categories: storeCategories, fetchCategories } = useCategoryStore();
+  
+  // Fetch categories when modal becomes visible
+  useEffect(() => {
+    if (isVisible) {
+      fetchCategories();
+    }
+  }, [isVisible, fetchCategories]);
+  
+  const categories = availableCategories || storeCategories;
 
-  const categories = isRTL ? hebrewCategories : availableCategories;
+  // Handle apply button press
+  const handleApply = () => {
+    if (selectedCategories.length > 0) {
+      // Navigate to groceryResults with selected categories
+      router.push({
+        pathname: "../groceryResults",
+        params: { 
+          categories: selectedCategories.join("|"), // Use pipe separator as expected by API
+          isMultiCategory: "true" // Flag to indicate multi-category mode
+        },
+      });
+      onClose(); // Close the modal
+    } else {
+      // If no categories selected, just call the original onApply if provided
+      onApply?.();
+    }
+  };
 
   return (
     <Modal
@@ -106,15 +125,20 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 style={isRTL ? rtlStyles.textRight : {}}>
             {isRTL ? "קטגוריות" : "Categories"}
           </Text>
-          <View className="flex-row flex-wrap gap-2 mb-8">
+          <View className="flex-row flex-wrap mb-8" style={{ gap: 8 }}>
             {categories.map((category) => (
               <TouchableOpacity
                 key={category}
-                className={`py-3 px-5 rounded-full ${
+                className={`py-2 px-3 rounded-xl mb-2 ${
                   selectedCategories.includes(category)
                     ? "bg-blue-500"
                     : "bg-gray-100"
                 }`}
+                style={{ 
+                  flexShrink: 1,
+                  minWidth: '45%',
+                  maxWidth: '100%'
+                }}
                 onPress={() => toggleCategorySelection(category)}
               >
                 <Text
@@ -122,8 +146,12 @@ const FilterModal: React.FC<FilterModalProps> = ({
                     selectedCategories.includes(category)
                       ? "text-white"
                       : "text-gray-800"
-                  } font-medium`}
-                  style={isRTL ? rtlStyles.textRight : {}}
+                  } font-medium text-sm`}
+                  style={{ 
+                    textAlign: "left",
+                    lineHeight: 18
+                  }}
+                  numberOfLines={2}
                 >
                   {category}
                 </Text>
@@ -143,26 +171,21 @@ const FilterModal: React.FC<FilterModalProps> = ({
             </Text>
           </View>
 
-          {/* Price Range Section */}
-          <Text className="text-xl font-bold text-gray-800 mb-4"
-                style={isRTL ? rtlStyles.textRight : {}}>
-            {isRTL ? "טווח מחירים" : "Price Range"}
-          </Text>
-          <View className="mb-8">
-            {/* Price range slider would go here */}
-            <View className="flex-row justify-between">
-              <Text className="text-gray-600">${priceRange.min}</Text>
-              <Text className="text-gray-600">${priceRange.max}</Text>
-            </View>
-          </View>
-
           {/* Apply Button */}
           <TouchableOpacity
-            className="bg-blue-500 py-4 rounded-xl mb-4"
-            onPress={onApply}
+            className={`py-4 rounded-xl mb-4 ${
+              selectedCategories.length > 0 ? "bg-blue-500" : "bg-gray-300"
+            }`}
+            onPress={handleApply}
+            disabled={selectedCategories.length === 0}
           >
-            <Text className="text-white text-center font-bold text-lg">
-              {applyButtonText}
+            <Text className={`text-center font-bold text-lg ${
+              selectedCategories.length > 0 ? "text-white" : "text-gray-500"
+            }`}>
+              {selectedCategories.length > 0 
+                ? `${applyButtonText} (${selectedCategories.length})`
+                : applyButtonText
+              }
             </Text>
           </TouchableOpacity>
         </ScrollView>

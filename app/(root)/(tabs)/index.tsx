@@ -10,29 +10,39 @@ import * as Location from 'expo-location';
 // Import our new components
 import CategoryList from '@/components/grocery/CategoryList';
 import LocationHeader from '@/components/header/LocationHeader';
-import { useLocationStore, usePromotionsSummaryStore, useSettingsStore } from '@/store';
+import { useLocationStore, usePromotionsSummaryStore, useSettingsStore, useCategoryStore } from '@/store';
 import FilterModal from '@/components/filter/FilterModal';
 import GroceryAutocompleteInput from '@/components/grocery/GroceryAutoCompleteInput';
 import PromotionCard from '@/components/promotions/PromotionCard';
 import PromotionListModal from '@/components/promotions/PromotionListModal';
 import ShimmerCard from '@/components/ui/ShimmerCard';
+import { PLACEHOLDER_IMAGE } from '@/constants/Placeholders';
 // Force RTL for the app
 
 
-const categories = [
-  { id: 1, name: 'פירות', icon: 'fruit-cherries' },
-  { id: 2, name: 'בשרים', icon: 'food-steak' },
-  { id: 3, name: 'ירקות', icon: 'carrot' },
-  { id: 4, name: 'משקאות', icon: 'glass-wine' },
-  { id: 5, name: 'אפייה', icon: 'chef-hat' },
-  { id: 6, name: 'מוצרי חינוכי', icon: 'book-open-page-variant' },
-  { id: 7, name: 'חלב ומוצריו', icon: 'cow' },
-  { id: 8, name: 'דגים', icon: 'fish' },
-  { id: 9, name: 'קפואים', icon: 'snowflake' },
-  { id: 10, name: 'ממתקים', icon: 'candy' },
-  { id: 11, name: 'בריאות', icon: 'medical-bag' },
-  { id: 12, name: 'ניקיון', icon: 'spray-bottle' },
-];
+const getCategoryIcon = (categoryName: string): string => {
+  const iconMap: { [key: string]: string } = {
+    "טקסטיל, ביגוד והנעלה": "hanger",
+    "אחר": "dots-horizontal",
+    "תינוקות": "baby-face",
+    "אלקטרוניקה סלולר": "cellphone",
+    "כלי עבודה ועוד": "tools",
+    "תבלינים": "shaker",
+    'אחזקת הבית וב"ח': "hammer-wrench",
+    "פנאי, אחסון וארגון ועוד": "toy-brick",
+    "פארם טיפוח וניקיון": "spray-bottle",
+    "בישול, אפייה, שימורים ורטבים": "chef-hat",
+    "משקאות": "glass-wine",
+    "קפה, אלכוהול וסיגריות": "coffee",
+    "חטיפים וממתקים": "candy",
+    "פירות וירקות": "fruit-cherries",
+    "בשר ודגים": "food-steak",
+    "קפואים / טבעוניים": "snowflake",
+    "לחם ומאפים": "bread-slice",
+    "ביצים ומוצרי חלב": "cow",
+  };
+  return iconMap[categoryName] || "help-circle";
+};
 
 
 // RTL-friendly styles
@@ -52,8 +62,6 @@ const rtlStyles = StyleSheet.create({
   },
 });
 
-// Placeholder image for grocery items
-const PLACEHOLDER_IMAGE = "https://cdn-icons-png.flaticon.com/512/1046/1046869.png";
 
 interface DetailedGroceryItem {
   itemCode: string;
@@ -80,6 +88,16 @@ export default function HomeScreen() {
   const [locationError, setLocationError] = useState(false);
   const { promotions, isLoading, error, fetchPromotionsGroupedByStore } = usePromotionsSummaryStore();
   const { maxStoreDistance } = useSettingsStore();
+  
+  // Category store
+  const { categories: backendCategories, fetchCategories, isLoading: categoriesLoading } = useCategoryStore();
+
+  // Transform backend categories to the format expected by CategoryList
+  const categories = backendCategories.map((categoryName, index) => ({
+    id: index + 1,
+    name: categoryName,
+    icon: getCategoryIcon(categoryName),
+  }));
 
   // New state to control ScrollView scrollability
   const [scrollEnabled, setScrollEnabled] = useState(true);
@@ -98,6 +116,11 @@ export default function HomeScreen() {
     storeId: string;
     promotions: Array<{ promotionId: string; promotionName: string; endDate: string }>;
   } | null>(null);
+
+  // Fetch categories when component mounts
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   // Fetch promotions only after location is retrieved
   useEffect(() => {
@@ -155,6 +178,10 @@ export default function HomeScreen() {
    */
   const handleCategoryPress = (category: any) => {
     console.log("Category pressed:", category.name);
+    router.push({
+      pathname: "../groceryResults",
+      params: { categoryName: category.name },
+    });
   };
 
   /**
@@ -478,6 +505,7 @@ export default function HomeScreen() {
                 chainId={store.chainId}
                 subChainId={store.subChainId}
                 storeId={store.storeId}
+                storeImageUrl={store.subchains?.imageUrl ?? PLACEHOLDER_IMAGE}
                 promotions={store.promotions}
                 onPromotionPress={handlePromotionPress}
                 onShowMorePress={() => handleShowMorePromotions({
@@ -517,7 +545,7 @@ export default function HomeScreen() {
                   onPress={() => handleSelectGrocery(item)}
                 >
                   <Image
-                    source={{ uri: PLACEHOLDER_IMAGE }}
+                    source={{ uri: item.imageUrl ?? PLACEHOLDER_IMAGE }}
                     style={styles.itemImage}
                     resizeMode="contain"
                   />
@@ -549,6 +577,7 @@ export default function HomeScreen() {
         toggleCategorySelection={toggleCategorySelection}
         priceRange={priceRange}
         selectedCompany={selectedCompany}
+        availableCategories={backendCategories}
         isRTL={true}
         applyButtonText="החל"
         resetButtonText="איפוס"

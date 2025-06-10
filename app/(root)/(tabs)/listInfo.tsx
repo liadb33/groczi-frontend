@@ -63,6 +63,10 @@ export default function ListInfoScreen() {
     });
   };
 
+  const handleGoHome = () => {
+    router.push('/');
+  };
+
   return (
     <View className="flex-1 bg-gray-50">
       <AppHeader
@@ -77,9 +81,24 @@ export default function ListInfoScreen() {
           <Text className="text-lg text-gray-600 font-medium text-center">
             אין מוצרים ברשימה זו
           </Text>
-          <Text className="text-sm text-gray-500 text-center mt-2">
+          <Text className="text-sm text-gray-500 text-center mt-2 mb-6">
             הוסף מוצרים כדי להתחיל לבנות את הרשימה שלך
           </Text>
+          <TouchableOpacity
+            onPress={handleGoHome}
+            className="rounded-xl overflow-hidden"
+          >
+            <LinearGradient
+              colors={["#2563EB", "#1D4ED8"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              className="py-3 px-6 items-center justify-center rounded-xl"
+            >
+              <Text className="text-white text-base font-medium">
+                חזור לעמוד הבית
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlatList

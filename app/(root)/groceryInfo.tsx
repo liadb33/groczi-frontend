@@ -9,6 +9,7 @@ import { useBookmarkStore, useCartStore, useGroceryStore, useListDetailsStore, u
 import Toast from "react-native-toast-message";
 import { toastConfig } from "@/utils/toastConfig/toastConfig";
 import CustomListModal from "@/components/grocery/CustomListModal";
+import { PLACEHOLDER_IMAGE } from "@/constants/Placeholders";
 
 const GroceryInfoScreen = () => {
   const { id: itemCode } = useLocalSearchParams<{ id: string }>();
@@ -153,13 +154,13 @@ const GroceryInfoScreen = () => {
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Image Header */}
-        <View className="relative h-64 w-full">
+        <View className="relative h-64 w-full bg-gray-50">
           <Image
             source={{
-              uri: "https://images.unsplash.com/photo-1600423115367-87ea7661688f?ixlib=rb-1.2.1&auto=format&fit=crop&w=480&q=80",
+              uri: currentItem.imageUrl ?? PLACEHOLDER_IMAGE,
             }}
             className="w-full h-full rounded-t-3xl"
-            resizeMode="cover"
+            resizeMode="contain"
           />
           <TouchableOpacity
             className="absolute top-4 right-4 bg-black/40 p-2 rounded-full"
@@ -221,7 +222,7 @@ const GroceryInfoScreen = () => {
                 {/* Store Logo - Right Side (RTL) */}
                 <Image
                   source={{
-                    uri: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80",
+                    uri: store.subchains?.imageUrl ?? PLACEHOLDER_IMAGE,
                   }}
                   className="w-12 h-12 rounded-lg bg-gray-100"
                   resizeMode="cover"

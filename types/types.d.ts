@@ -140,7 +140,12 @@ declare interface GroceryStoreInfoProps {
   Address: string;
   City: string;
   ZipCode: string;
+  subchains?: {
+    imageUrl?: string;
+    SubChainName?: string;
+  };
 }
+
 // Grocery Autocomplete Input
 interface GroceryAutocompleteInputProps {
   onSelectGrocery: (item: DetailedGroceryItem) => void;
@@ -157,6 +162,7 @@ declare interface DetailedGroceryItem {
   itemType?: number;
   itemName?: string | null;
   manufacturerName?: string | null;
+  imageUrl?: string | null;
   unitQty?: string | null;
   unitOfMeasure?: string | null;
   isWeighted?: boolean;
@@ -391,6 +397,10 @@ declare interface Store {
   ZipCode?: string | null;
   Latitude?: number | null;
   Longitude?: number | null;
+  subchains?: {
+    imageUrl?: string;
+    SubChainName?: string;
+  };
 }
 
 declare interface StoreStateProps {
@@ -516,3 +526,24 @@ declare interface SettingsStore {
   setMaxTravelDistance: (val: number) => void;
 }
 
+
+// Category Types
+
+declare interface CategoryStore {
+  categories: string[];
+  selectedCategories: string[];
+  groceries: GroceryItem[];
+  page: number;
+  totalPages: number;
+  isLoading: boolean;
+  error: string | null;
+  groceryCountByCategory: number | null;
+
+  fetchGroceryCountByCategory: (category: string) => Promise<void>;
+  fetchCategories: () => Promise<void>;
+  fetchGroceriesByCategory: (
+    categories: string[],
+    page?: number,
+    limit?: number
+  ) => Promise<void>;
+}
