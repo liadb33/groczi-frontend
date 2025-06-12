@@ -1,232 +1,585 @@
-# Groczi Frontend: The Smart Grocery Shopping Assistant
+# Groczi Frontend 🛒
 
-This repository contains the official frontend for **Groczi**, a modern mobile application designed to revolutionize your grocery shopping experience. Built with React Native and Expo, this application provides a powerful yet intuitive interface for finding the best prices, managing shopping lists, and optimizing your shopping trips.
+**A sophisticated React Native mobile application for intelligent grocery shopping optimization**
 
-This document serves as an in-depth guide to the frontend architecture, features, and development workflows, tailored for project evaluators, developers, and contributors.
-
----
-
-## 🌟 Table of Contents
-
-- [Live Demo (Placeholder)](#-live-demo)
-- [Key Features](#-key-features)
-  - [The Optimization Engine](#-the-optimization-engine)
-  - [Comprehensive List Management](#-comprehensive-list-management)
-  - [Advanced Product Discovery](#-advanced-product-discovery)
-  - [Personalization](#-personalization)
-- [Architectural Deep Dive](#-architectural-deep-dive)
-  - [Core Philosophy](#core-philosophy)
-  - [Project Structure Analysis](#-project-structure-analysis)
-  - [State Management with Zustand](#-state-management-with-zustand)
-  - [Navigation with Expo Router](#-navigation-with-expo-router)
-  - [Component-Driven UI Development](#-component-driven-ui-development)
-- [Tech Stack](#-tech-stack)
-- [Getting Started](#-getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation & Setup](#installation--setup)
-- [Available Scripts](#-available-scripts)
-- [Final Degree Project](#-final-degree-project)
+[![React Native](https://img.shields.io/badge/React%20Native-0.76.9-blue.svg)](https://reactnative.dev/)
+[![Expo](https://img.shields.io/badge/Expo-~52.0.42-black.svg)](https://expo.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3.3-blue.svg)](https://www.typescriptlang.org/)
+[![Zustand](https://img.shields.io/badge/Zustand-5.0.3-orange.svg)](https://github.com/pmndrs/zustand)
 
 ---
 
-## 🎥 Live Demo
+## 📋 Table of Contents
 
-*(Here you could embed a GIF showcasing the app in action.)*
-
-![Groczi App Demo](https://via.placeholder.com/800x450.png?text=Groczi+App+Demo+GIF)
-
----
-
-## 🚀 Key Features
-
-Groczi is not just another shopping list app. It's an intelligent assistant designed to save users time and money.
-
-### 💡 The Optimization Engine
-
-This is the core of the Groczi experience, accessible from the `comparePrices` screen. Once a user has items in their cart or a shopping list, they can initiate the optimization process.
-
--   **Dual Optimization Modes:**
-    -   **Single-Store:** Finds the single best store for the entire list.
-    -   **Multi-Store:** Calculates the most cost-effective trip by splitting the list across several nearby stores.
--   **User-Centric Preferences:** A custom `ThreeStatesSlider` component allows users to weigh their preference between **minimum cost** and **minimum travel distance**, giving them full control over the optimization algorithm's priorities.
--   **Detailed Results UI:**
-    -   For single-store results, the `SingleStoreItemCard` presents the best option, clearly displaying total cost, distance, and even listing any items that are unavailable at that location.
-    -   For multi-store results, each potential trip is shown as a `MultiStoreSolutionItem`. These cards are expandable, revealing a `StoreInSolutionItem` for each stop on the trip. Expanding a store then shows the exact items to purchase there, rendered by the `StoreItemInSolution` component.
--   **Seamless Navigation:** From any result, users can tap a button to get turn-by-turn directions via their device's native mapping application.
-
-### 📋 Comprehensive List Management
-
-Groczi provides robust functionality for creating and managing shopping lists, making it a powerful tool for household organization.
-
--   **Full CRUD Functionality:** Users can Create, Read, Update, and Delete any number of lists from the `my-lists` tab.
--   **Intuitive Edit Mode:** A dedicated "Edit Mode" allows for the bulk selection and deletion of multiple lists, streamlined for efficiency.
--   **Price Awareness:** Each list item (`ListItem`) displays an estimated minimum price for the entire list, giving users a budget forecast at a glance.
--   **Dedicated List View:** Tapping a list navigates to the `listInfo` screen, which displays all items in that specific list using the reusable `CartItem` component. From here, users can adjust quantities or send the entire list directly to the Price Comparison engine.
-
-### 🔍 Advanced Product Discovery
-
-Finding items is fast, intuitive, and versatile.
-
--   **Autocomplete Search:** The home screen features a `GroceryAutoCompleteInput` that provides instant search suggestions by calling the groceries API on a debounced timer as the user types.
--   **Barcode Scanning:** The `barcodeScanner` screen uses `expo-camera` to provide a fast and reliable way to look up products. Simply scan a barcode, and the app navigates directly to the `groceryInfo` screen for that item.
--   **Category Browsing:** The home screen displays a horizontal `CategoryList` for browsing items by their department (e.g., "Dairy & Eggs," "Fruits & Vegetables").
--   **Advanced Filtering:** The `FilterModal` component allows for powerful multi-faceted filtering. Users can select multiple categories to refine their search, and the results are displayed on the `groceryResults` screen.
-
-### ✨ Personalization
-
-Groczi adapts to the user's habits and location.
-
--   **My Groceries (Bookmarks):** Users can bookmark any item. These saved products appear in the `my-groceries` tab, rendered as `GrocerySavedCard`s. This creates a personalized catalog of frequently bought items, which can be quickly re-added to the cart or removed with a simple swipe gesture via the `SwipeDeleteItem` component.
--   **Location-Aware Promotions:** The home screen uses the device's location to fetch and display relevant promotions from nearby stores in `PromotionCard` components. Tapping a promotion shows all included products; tapping "Show More" opens a `PromotionListModal` with all deals from that store.
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Architecture](#architecture)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [State Management](#state-management)
+- [Navigation System](#navigation-system)
+- [Component Library](#component-library)
+- [API Integration](#api-integration)
+- [Setup & Installation](#setup--installation)
+- [Development Workflow](#development-workflow)
+- [Performance Optimizations](#performance-optimizations)
+- [Internationalization](#internationalization)
 
 ---
 
-## 🏛️ Architectural Deep Dive
+## 🎯 Overview
 
-### Core Philosophy
+Groczi is a cutting-edge React Native mobile application that revolutionizes grocery shopping through intelligent optimization algorithms. Built as a comprehensive frontend for a grocery comparison and optimization platform, it empowers users to make informed shopping decisions by comparing prices across multiple stores, optimizing shopping routes, and managing personalized shopping lists.
 
-The application is built on principles of **modularity, scalability, and separation of concerns**.
-
-1.  **Feature-First Organization:** Code is grouped by feature (e.g., `components/promotions`, `utils/api/promotions.ts`, `usePromotionsSummaryStore`). This makes the codebase easy to navigate and maintain.
-2.  **Centralized State:** All application state is managed by Zustand, completely decoupling state logic from the UI. Components are "dumb" consumers of state and dispatchers of actions.
-3.  **Component Reusability:** The UI is composed of small, reusable components with well-defined props. This promotes consistency and accelerates development.
-4.  **Abstraction of Services:** All external interactions (like API calls) are abstracted into a dedicated service layer (`utils/api`), ensuring that components and stores are not directly concerned with the implementation details of data fetching.
-
-### 📁 Project Structure Analysis
-
-Here is a detailed breakdown of the project's directory structure:
-
-| Path | Description |
-| :--- | :--- |
-| **`app/`** | **Navigation & Screens.** Contains all application routes, managed by Expo Router. |
-| `app/(root)/` | The main navigation group, defining the primary `Stack.Navigator`. |
-| `app/(root)/(tabs)/` | Defines the four primary tabs of the app (`index`, `cart`, `my-groceries`, `my-lists`). |
-| `app/_layout.tsx` | The root layout. Initializes fonts, the splash screen, and global providers like `PaperProvider`. |
-| `app/+not-found.tsx` | A catch-all route for unmatched URLs. |
-| **`assets/`** | **Static Assets.** Contains all fonts, icons, and images used in the application. |
-| **`components/`** | **Reusable UI Components.** This is the heart of the UI library. |
-| `components/comparePrices/` | All components specific to the complex price comparison and results screen. |
-| `components/filter/` | Contains the `FilterModal` used for advanced product searching. |
-| `components/grocery/` | Components for displaying grocery items in various contexts (results, saved cards, etc.). |
-| `components/header/` | Reusable headers, like the generic `AppHeader` and the specialized `LocationHeader`. |
-| `components/lists/` | Components for the "My Lists" feature, including items, headers, and modals. |
-| `components/promotions/` | Components for displaying store promotions on cards and in modals. |
-| `components/ui/` | **Base UI Kit.** General-purpose elements like modals, settings rows, and the extensive shimmer loading placeholder library. |
-| **`constants/`** | **Global Constants.** Holds static, app-wide values like the `Colors.ts` palette. |
-| **`hooks/`** | **Custom React Hooks.** E.g., `useColorScheme` for theme detection. |
-| **`store/`** | **Zustand State Management.** A single `index.ts` file defines all state stores for the entire app. |
-| **`types/`** | **TypeScript Definitions.** A global `types.d.ts` file for all custom types. |
-| **`utils/`** | **Utility Functions & Services.** |
-| `utils/api/` | **API Layer.** Contains all functions that fetch data from the backend. Each file corresponds to a backend resource (e.g., `cart.ts`, `lists.ts`). |
-| `utils/mappers/` | Data transformation functions, e.g., mapping raw API responses to client-side types. |
-| `tailwind.config.js` | Configuration file for NativeWind, allowing for custom utility classes and theme extensions. |
-
-### 🧠 State Management with Zustand
-
-We use a single, monolithic `store/index.ts` file to define all our Zustand stores. This provides a single source of truth for the entire application's state and makes it easy to understand data flow.
-
-| Store | State Properties | Key Actions | Description |
-| :--- | :--- | :--- | :--- |
-| **`useLocationStore`** | `userLatitude`, `userLongitude`, `destinationLatitude`, etc. | `setUserLocation`, `setDestinationLocation` | Tracks the user's location and any selected map destination. |
-| **`useCartStore`** | `cartItems`, `isLoading` | `loadCart`, `addToCart`, `removeFromCart`, `incrementQuantity` | Manages all aspects of the user's shopping cart. |
-| **`useBookmarkStore`** | `bookmarks`, `isLoading` | `loadBookmarks`, `addToBookmarks`, `removeFromBookmarks` | Manages the user's list of saved/"favorite" items. |
-| **`useListStore`** | `lists`, `isLoading` | `fetchAllLists`, `addNewList`, `removeLists` | Manages the collection of user-created shopping lists. |
-| **`useListDetailsStore`** | `id`, `name`, `items` | `fetchList`, `addItem`, `updateItemQuantity` | Manages the state of a *single*, currently viewed shopping list. |
-| **`useGroceryStore`** | `groceriesResults`, `currentItem`, `itemStores` | `search`, `fetchItemDetail`, `fetchItemStores` | Handles fetching, searching, and displaying individual grocery products. |
-| **`usePromotionsSummaryStore`** | `promotions`, `isLoading` | `fetchPromotionsGroupedByStore` | Fetches and stores the promotion data displayed on the home screen. |
-| **`useCategoryStore`** | `categories`, `isLoading` | `fetchCategories` | Fetches and stores the list of all available product categories. |
-| **`useSettingsStore`** | `maxStoreDistance`, `maxTravelDistance`, `maxStores` | `setMaxStoreDistance`, etc. | Persists the user's preferences for the optimization engine. |
-| **`useOptimizationStore`** | `groceries`, `singleStoreResult`, `multiStoreResult` | `runSingleStoreOptimization`, `runMultiStoreOptimization` | The most complex store; it holds the input for the optimization engine and stores its results. |
-
-### 🧭 Navigation with Expo Router
-
-Navigation is handled declaratively using **Expo Router v3**.
-
--   **File-Based Routing:** Every screen is a file in the `app/` directory. This makes the navigation structure intuitive and easy to follow.
--   **Layouts:** The `_layout.tsx` files define the navigation hierarchy. The root layout sets up global providers, and nested layouts configure navigators like `Stack` and `Tabs`.
--   **Grouped Routes:** We use directory groups like `(root)` and `(tabs)` to organize routes and share layouts without affecting the URL structure.
--   **Hiding Tabs:** Screens that are part of a stack but should not appear in the tab bar (e.g., `listInfo`, `location`) are configured with `href: null` in their options. This is a clean way to handle nested navigation within a tab group.
--   **Typed Routes:** We leverage Expo Router's features for type-safe navigation, ensuring that `router.push` calls are checked against existing routes and their required parameters.
-
-### 🎨 Component-Driven UI Development
-
-The UI is built from the ground up with a library of custom, reusable components.
-
--   **Atomic Design Principles:** The `components/` directory is organized logically, with foundational elements in `components/ui` and more complex, feature-specific components in their respective folders.
--   **Shimmer Placeholders:** To create a perception of speed and to avoid jarring loading spinners, the app makes extensive use of shimmer placeholders. A `ShimmerContainer` component is used to easily generate lists of shimmer items, and there is a dedicated shimmer component for almost every major UI card (e.g., `GroceryResultCardShimmer`, `CartItemShimmer`, `ListItemShimmer`).
--   **Platform-Specific Polish:** We pay close attention to platform conventions.
-    -   `IconSymbol.tsx` uses the `.ios.tsx` extension to render native **SF Symbols** on iOS for a perfect system look, while gracefully falling back to **Material Icons** on Android.
-    -   `TabBarBackground.ios.tsx` uses `expo-blur` to create a translucent, blurred tab bar that matches the native iOS aesthetic, while other platforms get a standard opaque background.
--   **Complex Custom Components:**
-    -   `SwipeDeleteItem`: A reusable wrapper for `react-native-swipe-list-view` that provides a consistent "swipe-to-delete" interaction across the app.
-    -   `FloatingEyeMenu`: A complex, animated Floating Action Button built with `react-native-reanimated` that provides a delightful user interaction on the `groceryInfo` screen.
-    -   `GoogleTextInput` & `GroceryAutoCompleteInput`: Powerful, reusable input components that abstract away the complexity of integrating with Google Places and the backend search API.
+The application leverages advanced location-based services, real-time price comparison, and sophisticated optimization algorithms to deliver a seamless shopping experience that saves both time and money.
 
 ---
 
-## 🛠️ Tech Stack
+## ✨ Key Features
 
--   **Framework:** [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/)
--   **Navigation:** [Expo Router](https://docs.expo.dev/router/introduction/) (v3)
--   **State Management:** [Zustand](https://github.com/pmndrs/zustand)
--   **Styling:** [NativeWind](https://www.nativewind.dev/) (v4)
--   **UI Libraries:** [React Native Paper](https://react-native-paper.com/), [React Native Modal](https://github.com/react-native-modal/react-native-modal), [React Native Maps](https://github.com/react-native-maps/react-native-maps)
--   **Icons:** [Lucide React Native](https://lucide.dev/), [Expo Vector Icons](https://docs.expo.dev/guides/icons/), [Expo Symbols](https://docs.expo.dev/versions/latest/sdk/symbols/)
--   **Language:** [TypeScript](https://www.typescriptlang.org/)
+### 🔍 **Intelligent Product Discovery**
+- **Advanced Search Engine**: Real-time autocomplete with semantic search capabilities
+- **Barcode Scanner**: Instant product identification using device camera
+- **Category-Based Browsing**: Organized product exploration with custom iconography
+- **Smart Filtering**: Multi-dimensional filtering by price, category, and brand
 
----
+### 🛒 **Shopping Cart Management**
+- **Real-time Synchronization**: Cloud-synced cart across devices
+- **Quantity Management**: Intuitive increment/decrement with haptic feedback
+- **Price Tracking**: Live price updates and total calculations
+- **Swipe Interactions**: Gesture-based item removal and editing
 
-## 🏁 Getting Started
+### 📋 **List Management System**
+- **Multiple Lists**: Create and manage unlimited shopping lists
+- **Collaborative Features**: Share lists with family members
+- **Price Estimation**: Automatic cost calculation for entire lists
+- **Smart Suggestions**: AI-powered product recommendations
 
-Follow these instructions to get the project up and running on your local machine for development and testing purposes.
+### 🎯 **Advanced Optimization Engine**
+- **Single-Store Optimization**: Find the best store for your entire list
+- **Multi-Store Optimization**: Optimal route planning across multiple stores
+- **Cost vs. Distance Preferences**: Customizable optimization parameters
+- **Real-time Route Planning**: Integration with mapping services
 
-### Prerequisites
+### 📍 **Location-Aware Services**
+- **GPS Integration**: Automatic location detection and store proximity
+- **Store Mapping**: Interactive maps with store locations and details
+- **Promotion Discovery**: Location-based deals and discounts
+- **Navigation Integration**: Seamless handoff to navigation apps
 
--   Node.js (LTS version recommended)
--   `npm` package manager
--   [Expo Go](https://expo.dev/go) app on your iOS or Android device, or an [Android](https://docs.expo.dev/workflow/android-studio-emulator/)/[iOS](https://docs.expo.dev/workflow/ios-simulator/) emulator installed on your machine.
--   A Google Maps API key with the Places API enabled.
-
-### Installation & Setup
-
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/your-username/groczi-frontend.git
-    cd groczi-frontend
-    ```
-
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
-
-3.  **Set up environment variables:**
-    Create a file named `.env` in the root of the project. This file is ignored by Git and should contain your secret keys.
-    ```
-    EXPO_PUBLIC_GOOGLE_API_KEY="YOUR_GOOGLE_MAPS_API_KEY_HERE"
-    ```
-
-4.  **Run the application:**
-    ```bash
-    npx expo start
-    ```
-    This will start the Metro bundler. You can then scan the QR code with the Expo Go app on your phone or run the app on an emulator.
+### 💾 **Personalization Features**
+- **Bookmark System**: Save favorite products for quick access
+- **Shopping History**: Track past purchases and preferences
+- **Custom Preferences**: Personalized optimization settings
+- **Smart Notifications**: Contextual alerts and reminders
 
 ---
 
-## 📜 Available Scripts
+## 🏗️ Architecture
 
-In the project directory, you can run:
+### **Design Patterns**
+- **Component-Based Architecture**: Modular, reusable UI components
+- **State Management**: Centralized Zustand stores with domain separation
+- **File-Based Routing**: Expo Router for type-safe navigation
+- **Layered Architecture**: Clear separation of concerns (UI, Business Logic, Data)
 
--   `npm start`: Runs the app in development mode using Expo.
--   `npm run android`: Deploys the app to a connected Android device or emulator.
--   `npm run ios`: Deploys the app to the iOS simulator.
--   `npm run web`: Runs the app in a web browser.
--   `npm test`: Runs the test suite using Jest.
--   `npm run lint`: Lints the code using Expo's recommended ESLint configuration.
+### **Core Architectural Principles**
+- **Separation of Concerns**: Clean boundaries between UI, state, and API layers
+- **Scalability**: Modular structure supporting feature expansion
+- **Performance**: Optimized rendering with lazy loading and memoization
+- **Maintainability**: TypeScript-first approach with comprehensive type definitions
+
+### **Data Flow Architecture**
+```
+User Interaction → Component → Zustand Store → API Layer → Backend
+                                    ↓
+                              Local State Update
+                                    ↓
+                              UI Re-render
+```
 
 ---
 
-## ✨ Final Degree Project
+## 🛠️ Technology Stack
 
-This project was developed as a final degree project, showcasing the application of modern mobile development practices to solve a real-world problem. The focus was on creating a feature-rich, user-friendly, and technically robust application. It demonstrates a deep understanding of mobile architecture, state management, and UI/UX design on the React Native platform. 
+### **Core Framework**
+- **React Native 0.76.9**: Cross-platform mobile development
+- **Expo ~52.0.42**: Development platform and build tools
+- **TypeScript 5.3.3**: Type-safe JavaScript development
+
+### **Navigation & Routing**
+- **Expo Router 4.0.20**: File-based routing system
+- **React Navigation 7.0.14**: Navigation primitives
+
+### **State Management**
+- **Zustand 5.0.3**: Lightweight state management
+- **React Native Async Storage**: Persistent local storage
+
+### **UI & Styling**
+- **NativeWind 4.1.23**: Tailwind CSS for React Native
+- **React Native Paper 5.13.1**: Material Design components
+- **Lucide React Native**: Modern icon library
+- **React Native Reanimated 3.16.1**: High-performance animations
+
+### **Maps & Location**
+- **React Native Maps 1.18.0**: Interactive mapping
+- **Expo Location 18.0.10**: GPS and location services
+- **React Native Google Places**: Address autocomplete
+
+### **Camera & Media**
+- **Expo Camera 16.0.18**: Barcode scanning capabilities
+- **Expo Image**: Optimized image handling
+
+### **Development Tools**
+- **ESLint**: Code linting and formatting
+- **Jest**: Unit testing framework
+- **TypeScript**: Static type checking
+
+---
+
+## 📁 Project Structure
+
+```
+Frontend/
+├── app/                          # Expo Router pages
+│   ├── (root)/                   # Main application routes
+│   │   ├── (tabs)/              # Tab-based navigation
+│   │   │   ├── index.tsx        # Home screen
+│   │   │   ├── cart.tsx         # Shopping cart
+│   │   │   ├── my-groceries.tsx # Bookmarked items
+│   │   │   ├── my-lists.tsx     # Shopping lists
+│   │   │   ├── location.tsx     # Location selection
+│   │   │   └── listInfo.tsx     # List details
+│   │   ├── groceryResults.tsx   # Search results
+│   │   ├── groceryInfo.tsx      # Product details
+│   │   ├── comparePrices.tsx    # Optimization engine
+│   │   ├── barcodeScanner.tsx   # Camera scanner
+│   │   └── settings.tsx         # User preferences
+│   ├── _layout.tsx              # Root layout with providers
+│   └── +not-found.tsx           # 404 error page
+├── components/                   # Reusable UI components
+│   ├── ui/                      # Core UI components
+│   │   ├── FloatingEyeMenu.tsx  # Animated FAB menu
+│   │   ├── *Shimmer.tsx         # Loading skeletons
+│   │   └── IconSymbol.ios.tsx   # Platform-specific icons
+│   ├── grocery/                 # Product-related components
+│   ├── comparePrices/           # Optimization UI
+│   ├── promotions/              # Deals and offers
+│   ├── header/                  # Navigation headers
+│   ├── lists/                   # List management
+│   └── filter/                  # Search filtering
+├── store/                       # Zustand state management
+│   └── index.ts                 # Centralized store definitions
+├── types/                       # TypeScript definitions
+│   └── types.d.ts              # Global type declarations
+├── utils/                       # Utility functions
+│   └── api/                     # API integration layer
+├── constants/                   # App constants
+├── hooks/                       # Custom React hooks
+└── assets/                      # Static assets
+```
+
+---
+
+## 🗄️ State Management
+
+The application uses **Zustand** for state management, organized into domain-specific stores:
+
+### **Location Store** (`useLocationStore`)
+Manages user and destination coordinates, store selection, and address information.
+
+```typescript
+interface LocationStore {
+  userLatitude: number | null;
+  userLongitude: number | null;
+  userAddress: string | null;
+  destinationLatitude: number | null;
+  destinationLongitude: number | null;
+  destinationAddress: string | null;
+  storeId: string | null;
+  chainId: string | null;
+  subChainId: string | null;
+}
+```
+
+### **Cart Store** (`useCartStore`)
+Handles shopping cart operations with real-time API synchronization.
+
+```typescript
+interface CartStore {
+  cartItems: CartItemType[];
+  isLoading: boolean;
+  loadCart: () => Promise<void>;
+  addToCart: (itemCode: string) => Promise<void>;
+  removeFromCart: (cartItemId: string) => Promise<void>;
+  incrementQuantity: (cartItemId: string) => Promise<void>;
+  decrementQuantity: (cartItemId: string) => Promise<void>;
+}
+```
+
+### **Optimization Store** (`useOptimizationStore`)
+Powers the core optimization engine with single and multi-store algorithms.
+
+```typescript
+interface OptimizationStore {
+  groceries: CustomOptimizationItem[];
+  singleStoreResult: RankedStoresOptimizationResult | null;
+  multiStoreResult: TopMultiStoreSolutionsResult | null;
+  runSingleStoreOptimization: (params: OptimizeSingleStoreListRequestBody) => Promise<void>;
+  runMultiStoreOptimization: (params: OptimizeMultiStoreListRequestBody) => Promise<void>;
+}
+```
+
+### **Additional Stores**
+- **Bookmark Store**: Manages saved/favorite products
+- **List Store**: Handles shopping list CRUD operations
+- **Grocery Store**: Product search and details
+- **Promotions Store**: Location-based deals and discounts
+- **Category Store**: Product categorization and filtering
+- **Settings Store**: User preferences and optimization parameters
+
+---
+
+## 🧭 Navigation System
+
+### **File-Based Routing with Expo Router**
+The app uses Expo Router's file-based routing system for type-safe navigation:
+
+```
+app/
+├── _layout.tsx                   # Root layout with providers
+├── (root)/                       # Main app group
+│   ├── _layout.tsx              # Stack navigator
+│   ├── (tabs)/                  # Tab navigation group
+│   │   ├── _layout.tsx          # Tab bar configuration
+│   │   ├── index.tsx            # Home tab
+│   │   ├── cart.tsx             # Cart tab
+│   │   ├── my-groceries.tsx     # Bookmarks tab
+│   │   ├── my-lists.tsx         # Lists tab
+│   │   ├── location.tsx         # Hidden location screen
+│   │   └── listInfo.tsx         # Hidden list details
+│   ├── groceryResults.tsx       # Search results
+│   ├── groceryInfo.tsx          # Product details
+│   ├── comparePrices.tsx        # Optimization screen
+│   ├── barcodeScanner.tsx       # Camera scanner
+│   └── settings.tsx             # Settings screen
+```
+
+### **Navigation Features**
+- **Type-Safe Routing**: Full TypeScript support for route parameters
+- **Deep Linking**: URL-based navigation support
+- **Tab Navigation**: Bottom tab bar with haptic feedback
+- **Stack Navigation**: Hierarchical screen management
+- **Modal Presentation**: Overlay screens for focused interactions
+
+---
+
+## 🎨 Component Library
+
+### **UI Components**
+
+#### **Shimmer Loading System**
+Sophisticated loading states with skeleton screens:
+- `GroceryResultCardShimmer`: Product grid loading
+- `CartItemShimmer`: Cart item loading
+- `ListItemShimmer`: List item loading
+- `ShimmerContainer`: Reusable shimmer wrapper
+
+#### **FloatingEyeMenu**
+Advanced animated floating action button with spring animations:
+```typescript
+interface FloatingEyeMenuProps {
+  onHeartPress?: () => void;
+  onPlusPress?: () => void;
+  onStarPress?: () => void;
+  containerClassName?: string;
+}
+```
+
+#### **Platform-Specific Components**
+- `IconSymbol.ios.tsx`: SF Symbols integration for iOS
+- `TabBarBackground.ios.tsx`: Native blur effects
+
+### **Feature Components**
+
+#### **Grocery Components**
+- `GroceryAutocompleteInput`: Smart search with autocomplete
+- `GroceryResultCard`: Product display with actions
+- `CategoryList`: Organized product browsing
+
+#### **Optimization Components**
+- `SingleStoreItemCard`: Store comparison display
+- `MultiStoreSolutionItem`: Multi-store route visualization
+- `OptimizationTypeDropdown`: Algorithm selection
+
+#### **Interactive Components**
+- `SwipeDeleteItem`: Gesture-based item removal
+- `ThreeStatesSlider`: Multi-state preference selector
+- `CustomRTLToast`: Right-to-left toast notifications
+
+---
+
+## 🔌 API Integration
+
+### **API Layer Architecture**
+Organized by domain with consistent patterns:
+
+```
+utils/api/
+├── config.ts                    # API configuration
+├── index.ts                     # Centralized exports
+├── groceries.ts                 # Product operations
+├── cart.ts                      # Cart management
+├── lists.ts                     # List operations
+├── bookmarks.ts                 # Bookmark management
+├── promotions.ts                # Deals and offers
+├── optimization.ts              # Route optimization
+├── categories.ts                # Product categories
+└── stores.ts                    # Store information
+```
+
+### **API Features**
+- **Centralized Configuration**: Environment-based API URLs
+- **Type-Safe Requests**: Full TypeScript integration
+- **Error Handling**: Consistent error management
+- **Request/Response Mapping**: Data transformation utilities
+- **Caching Strategy**: Optimized data fetching
+
+### **Key API Endpoints**
+- **Product Search**: `/groceries/search`
+- **Optimization**: `/optimization/single-store`, `/optimization/multi-store`
+- **Cart Operations**: `/cart/add`, `/cart/update`, `/cart/remove`
+- **Location Services**: `/stores/nearby`, `/promotions/by-location`
+
+---
+
+## 🚀 Setup & Installation
+
+### **Prerequisites**
+- Node.js 18+ and npm/yarn
+- Expo CLI (`npm install -g @expo/cli`)
+- iOS Simulator (macOS) or Android Studio
+- Physical device for testing (recommended)
+
+### **Installation Steps**
+
+1. **Clone the Repository**
+   ```bash
+   git clone <repository-url>
+   cd Frontend
+   ```
+
+2. **Install Dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Environment Configuration**
+   Create `.env` file:
+   ```env
+   EXPO_PUBLIC_API_URL=your_backend_api_url
+   ```
+
+4. **Start Development Server**
+   ```bash
+   npm start
+   # or
+   expo start
+   ```
+
+5. **Run on Device/Simulator**
+   ```bash
+   # iOS
+   npm run ios
+   
+   # Android
+   npm run android
+   
+   # Web (for testing)
+   npm run web
+   ```
+
+### **Development Setup**
+- **Code Editor**: VS Code with React Native extensions
+- **Debugging**: Flipper or React Native Debugger
+- **Testing**: Jest for unit tests
+- **Linting**: ESLint with React Native rules
+
+---
+
+## 🔄 Development Workflow
+
+### **Code Organization**
+- **Component Structure**: One component per file with co-located types
+- **Naming Conventions**: PascalCase for components, camelCase for functions
+- **Import Organization**: Absolute imports using `@/` alias
+- **Type Definitions**: Centralized in `types/types.d.ts`
+
+### **State Management Patterns**
+- **Store Separation**: Domain-specific stores for better organization
+- **Async Operations**: Consistent async/await patterns
+- **Error Handling**: Centralized error management
+- **Loading States**: Unified loading indicators
+
+### **Performance Best Practices**
+- **Lazy Loading**: Dynamic imports for large components
+- **Memoization**: React.memo and useMemo for expensive operations
+- **Image Optimization**: Expo Image with caching
+- **List Virtualization**: FlatList for large datasets
+
+---
+
+## ⚡ Performance Optimizations
+
+### **Rendering Optimizations**
+- **React.memo**: Prevent unnecessary re-renders
+- **useMemo/useCallback**: Memoize expensive calculations
+- **FlatList**: Virtualized lists for large datasets
+- **Image Caching**: Optimized image loading and caching
+
+### **State Management Optimizations**
+- **Selective Subscriptions**: Subscribe only to needed state slices
+- **Debounced Updates**: Prevent excessive API calls
+- **Optimistic Updates**: Immediate UI feedback
+
+### **Bundle Optimizations**
+- **Code Splitting**: Dynamic imports for large features
+- **Tree Shaking**: Remove unused code
+- **Asset Optimization**: Compressed images and fonts
+
+---
+
+## 🌐 Internationalization
+
+### **RTL Support**
+The application is built with comprehensive Right-to-Left (RTL) support:
+
+- **Layout Direction**: Automatic RTL layout adaptation
+- **Text Alignment**: Proper text direction handling
+- **Icon Mirroring**: Directional icons flip appropriately
+- **Navigation**: RTL-aware navigation patterns
+
+### **Localization Features**
+- **Hebrew Interface**: Native Hebrew text throughout
+- **Cultural Adaptation**: Local shopping patterns and preferences
+- **Date/Time Formatting**: Localized formatting
+- **Currency Display**: Local currency formatting
+
+---
+
+## 📱 Core Screen Functionality
+
+### **Home Screen** (`index.tsx`)
+The central hub featuring:
+- **Location-aware dashboard** with automatic GPS detection
+- **Smart search** with autocomplete and voice input
+- **Category browsing** with custom iconography
+- **Promotion discovery** based on user location
+- **Quick actions** for barcode scanning and settings
+
+### **Optimization Engine** (`comparePrices.tsx`)
+Advanced shopping optimization featuring:
+- **Single-store optimization**: Find the best store for your entire list
+- **Multi-store optimization**: Optimal route planning across multiple stores
+- **Cost vs. distance preferences**: Customizable lambda parameters
+- **Real-time calculations** with loading states and error handling
+- **Interactive results** with expandable store details
+
+### **Product Discovery** (`groceryResults.tsx`)
+Comprehensive product search and browsing:
+- **Multiple search modes**: Search, promotions, and category-based
+- **Advanced filtering**: Price range, category, and brand filters
+- **Pagination support**: Efficient loading of large result sets
+- **Shimmer loading**: Skeleton screens for better UX
+- **Quick actions**: Add to cart, bookmark, and view details
+
+### **Product Details** (`groceryInfo.tsx`)
+Detailed product information screen:
+- **Multi-store pricing**: Compare prices across different stores
+- **Store locations**: Interactive map with store details
+- **Floating action menu**: Quick access to cart, bookmarks, and lists
+- **Promotion integration**: Show applicable deals and discounts
+
+### **Barcode Scanner** (`barcodeScanner.tsx`)
+Camera-based product identification:
+- **Real-time scanning**: Instant barcode recognition
+- **Product lookup**: Automatic product information retrieval
+- **Error handling**: Graceful fallback for unrecognized codes
+- **Permission management**: Camera access handling
+
+---
+
+## 🛒 Shopping Features
+
+### **Cart Management** (`cart.tsx`)
+Full-featured shopping cart:
+- **Real-time synchronization**: Cloud-synced across devices
+- **Quantity controls**: Increment/decrement with haptic feedback
+- **Swipe actions**: Gesture-based item removal
+- **Price calculations**: Live total updates
+- **Empty state handling**: Engaging empty cart experience
+
+### **List Management** (`my-lists.tsx`)
+Comprehensive list management system:
+- **Multiple lists**: Create and organize unlimited lists
+- **Edit modes**: Bulk selection and deletion
+- **Price estimation**: Automatic cost calculation
+- **Search and filter**: Find lists quickly
+- **Sharing capabilities**: Export and share lists
+
+### **Bookmarks** (`my-groceries.tsx`)
+Personal product collection:
+- **Favorite products**: Save frequently purchased items
+- **Quick access**: Fast add-to-cart functionality
+- **Organization**: Category-based grouping
+- **Sync across devices**: Cloud-based bookmark storage
+
+---
+
+## 🎨 UI/UX Excellence
+
+### **Design System**
+- **Consistent Typography**: Hierarchical text styles
+- **Color Palette**: Accessible color schemes with dark mode support
+- **Spacing System**: Consistent margins and padding
+- **Component Library**: Reusable UI components
+
+### **Interaction Design**
+- **Haptic Feedback**: Tactile responses for user actions
+- **Smooth Animations**: React Native Reanimated for fluid transitions
+- **Gesture Support**: Swipe, pinch, and tap interactions
+- **Loading States**: Engaging skeleton screens and spinners
+
+### **Accessibility**
+- **Screen Reader Support**: VoiceOver and TalkBack compatibility
+- **High Contrast**: Accessible color combinations
+- **Font Scaling**: Dynamic type support
+- **Focus Management**: Keyboard navigation support
+
+---
+
+## 🔧 Advanced Features
+
+### **Location Services**
+- **GPS Integration**: Automatic location detection
+- **Store Proximity**: Distance-based store filtering
+- **Map Integration**: Interactive store locations
+- **Navigation Handoff**: Seamless transition to navigation apps
+
+### **Optimization Algorithms**
+- **Single-Store Algorithm**: Find optimal store for shopping list
+- **Multi-Store Algorithm**: Route optimization across multiple stores
+- **Cost-Distance Balancing**: Configurable optimization parameters
+- **Real-time Calculations**: Live optimization results
+
+### **Data Management**
+- **Offline Capabilities**: Local data caching
+- **Sync Mechanisms**: Conflict resolution and data merging
+- **Performance Monitoring**: Real-time performance tracking
+- **Error Recovery**: Graceful error handling and recovery
+
+---
+
+*Built with ❤️ using React Native and Expo*
