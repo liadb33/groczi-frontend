@@ -18,6 +18,7 @@ interface StorePriceHistory {
 interface PriceHistoryChartProps {
   data: StorePriceHistory[];
   maxStores?: number;
+   disableShuffling?: boolean;
 }
 
 // Pre-defined colors for store lines
@@ -46,7 +47,7 @@ interface ChartMetadata {
 }
 
 // Custom hook to process chart data
-export const usePriceHistoryData = (data: StorePriceHistory[], maxStores: number = 5): ChartMetadata => {
+export const usePriceHistoryData = (data: StorePriceHistory[], maxStores: number = 5, disableShuffling: boolean = false): ChartMetadata => {
   return useMemo(() => {
     if (!data || data.length === 0) {
       return {
@@ -68,8 +69,10 @@ export const usePriceHistoryData = (data: StorePriceHistory[], maxStores: number
     const storesWithData = data.filter(
       (store) => store.prices && store.prices.length > 0
     );
-    const shuffled = [...storesWithData].sort(() => 0.5 - Math.random());
-    const selectedStores = shuffled.slice(
+    const processedStores = disableShuffling 
+      ? storesWithData 
+      : [...storesWithData].sort(() => 0.5 - Math.random());
+    const selectedStores = processedStores.slice(
       0,
       Math.min(maxStores, storesWithData.length)
     );
@@ -109,12 +112,13 @@ export const usePriceHistoryData = (data: StorePriceHistory[], maxStores: number
       isEmpty: false,
       formatDate,
     };
-  }, [data, maxStores]);
+  }, [data, maxStores, disableShuffling]);
 };
 
 export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
   data,
   maxStores = 5,
+  disableShuffling = false,
 }) => {
   let font: SkFont | null = null;
   let smallFont: SkFont | null = null;
@@ -152,8 +156,10 @@ export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
     const storesWithData = data.filter(
       (store) => store.prices && store.prices.length > 0
     );
-    const shuffled = [...storesWithData].sort(() => 0.5 - Math.random());
-    const currentSelectedStores = shuffled.slice(
+    const processedStores = disableShuffling 
+      ? storesWithData 
+      : [...storesWithData].sort(() => 0.5 - Math.random());
+    const currentSelectedStores = processedStores.slice(
       0,
       Math.min(maxStores, storesWithData.length)
     );
@@ -251,7 +257,7 @@ export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
       dynamicFormatXLabel: currentFormatXLabel,
       dynamicTickCount: currentTickCount,
     };
-  }, [data, maxStores]);
+  }, [data, maxStores, disableShuffling]);
 
   const formatPrice = (value: number) => `₪${value.toFixed(2)}`;
 

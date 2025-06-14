@@ -5,6 +5,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useGroceryStore } from '@/store';
 import { PriceHistoryChart, usePriceHistoryData, STORE_COLORS } from '@/components/PriceHistoryChart';
 import AppHeader from '@/components/header/AppHeader';
+import CustomListModal from '@/components/grocery/CustomListModal';
+
+type FilterMode = 'all' | 'top5' | 'single';
+
+interface StoreListItem {
+  id: string;
+  name: string;
+  itemCount?: number;
+}
 
 export default function PriceHistoryScreen() {
   const router = useRouter();
@@ -15,9 +24,34 @@ export default function PriceHistoryScreen() {
 
   const { priceHistory, isLoading, fetchPriceHistory, currentItem } = useGroceryStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [filterMode, setFilterMode] = useState<FilterMode>('top5');
+  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
+  const [showStoreModal, setShowStoreModal] = useState(false);
+
+  // Process data based on filter mode
+  const getFilteredData = () => {
+    if (!priceHistory || priceHistory.length === 0) return [];
+
+    switch (filterMode) {
+      case 'all':
+        return priceHistory;
+      case 'single':
+        if (selectedStoreId) {
+          return priceHistory.filter(store => store.store_id === selectedStoreId);
+        }
+        return [];
+      case 'top5':
+      default:
+        return priceHistory;
+    }
+  };
+
+  const filteredData = getFilteredData();
+  const maxStores = filterMode === 'all' ? priceHistory?.length || 0 : 5;
 
   // Use the custom hook to get chart metadata
-  const chartMetadata = usePriceHistoryData(priceHistory || [], 5);
+  const shouldDisableShuffling = filterMode === 'all' || filterMode === 'single';
+  const chartMetadata = usePriceHistoryData(filteredData, maxStores, shouldDisableShuffling);
 
   useEffect(() => {
     if (itemCode) {
@@ -44,6 +78,45 @@ export default function PriceHistoryScreen() {
     setRefreshing(true);
     await loadPriceHistory();
     setRefreshing(false);
+  };
+
+  const handleFilterModeChange = (mode: FilterMode) => {
+    setFilterMode(mode);
+    if (mode !== 'single') {
+      setSelectedStoreId(null);
+    }
+  };
+
+  const handleStoreSelect = (storeId: string) => {
+    // Close modal first to prevent UI blocking
+    setShowStoreModal(false);
+    
+    // Then update the selected store after a brief delay
+    setTimeout(() => {
+      setSelectedStoreId(storeId);
+    }, 50);
+  };
+
+  const handleModalClose = () => {
+    setShowStoreModal(false);
+  };
+
+  
+
+  const getStoreOptions = (): StoreListItem[] => {
+    if (!priceHistory) return [];
+    
+    return priceHistory.map(store => ({
+      id: store.store_id,
+      name: store.store_name,
+      itemCount: store.prices?.length || 0
+    }));
+  };
+
+  const getSelectedStoreName = () => {
+    if (!selectedStoreId || !priceHistory) return '';
+    const store = priceHistory.find(s => s.store_id === selectedStoreId);
+    return store?.store_name || '';
   };
 
   const displayName = itemName || currentItem?.itemName || 'Product';
@@ -81,7 +154,11 @@ export default function PriceHistoryScreen() {
               <View className="bg-white rounded-lg p-3 mx-2 shadow-sm">
                 
                 {/* Chart Component */}
-                <PriceHistoryChart data={priceHistory} maxStores={5} />
+                <PriceHistoryChart 
+                  data={filteredData} 
+                  maxStores={maxStores} 
+                  disableShuffling={shouldDisableShuffling} 
+                />
 
                 {/* Custom Legend */}
                 <View className="mt-4 mb-2">
@@ -126,6 +203,77 @@ export default function PriceHistoryScreen() {
                     </View>
                   </View>
                 )}
+
+                {/* Filter Options */}
+                <View className="pt-4 border-t border-gray-200 mt-4">
+                  <Text className="text-sm font-medium text-gray-700 mb-3 text-center">סינון תצוגת חנויות:</Text>
+                  
+                  <View className="flex-row justify-center space-x-2">
+                    {/* All Stores Button */}
+                    <TouchableOpacity
+                      className={`px-4 py-2 rounded-lg mr-2 ${
+                        filterMode === 'all' ? 'bg-blue-500' : 'bg-gray-200'
+                      }`}
+                      onPress={() => handleFilterModeChange('all')}
+                    >
+                      <Text className={`text-sm font-medium ${
+                        filterMode === 'all' ? 'text-white' : 'text-gray-700'
+                      }`}>
+                        כל החנויות
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Top 5 Random Button */}
+                    <TouchableOpacity
+                      className={`px-4 py-2 rounded-lg mr-2 ${
+                        filterMode === 'top5' ? 'bg-blue-500' : 'bg-gray-200'
+                      }`}
+                      onPress={() => handleFilterModeChange('top5')}
+                    >
+                      <Text className={`text-sm font-medium ${
+                        filterMode === 'top5' ? 'text-white' : 'text-gray-700'
+                      }`}>
+                        5 חנויות מובילות
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Single Store Button */}
+                    <TouchableOpacity
+                      className={`px-4 py-2 rounded-lg ${
+                        filterMode === 'single' ? 'bg-blue-500' : 'bg-gray-200'
+                      }`}
+                      onPress={() => {
+                        // Switch to single mode and show modal
+                        handleFilterModeChange('single');
+                        setShowStoreModal(true);
+                      }}
+                    >
+                      <Text className={`text-sm font-medium ${
+                        filterMode === 'single' ? 'text-white' : 'text-gray-700'
+                      }`}>
+                        חנות יחידה
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Selected Store Display */}
+                  {filterMode === 'single' && selectedStoreId && (
+                    <View className="mt-3 p-3 bg-blue-50 rounded-lg">
+                      <Text className="text-sm text-blue-700 text-center">
+                        חנות נבחרת: {getSelectedStoreName()}
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* No Store Selected Message */}
+                  {filterMode === 'single' && !selectedStoreId && (
+                    <View className="mt-3 p-3 bg-yellow-50 rounded-lg">
+                      <Text className="text-sm text-yellow-700 text-center">
+                        לא נבחרה חנות. לחץ על "חנות יחידה" כדי לבחור.
+                      </Text>
+                    </View>
+                  )}
+                </View>
               </View>
             </ScrollView>
           ) : (
@@ -140,6 +288,20 @@ export default function PriceHistoryScreen() {
             </View>
           )}
         </>
+      )}
+
+      {/* Store Selection Modal */}
+      {showStoreModal && (
+        <CustomListModal
+          key="store-selection-modal"
+          title="בחר חנות"
+          visible={showStoreModal}
+          lists={getStoreOptions()}
+          loading={false}
+          onClose={handleModalClose}
+          onSelectList={handleStoreSelect}
+          itemCountLabel="מחירים"
+        />
       )}
     </View>
   );

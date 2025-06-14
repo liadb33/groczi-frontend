@@ -25,6 +25,7 @@ interface AddGroceryToListModalProps {
   loading: boolean;
   onClose: () => void;
   onSelectList: (listId: string) => void;
+  itemCountLabel?: string; // Optional prop for customizing the count label
 }
 
 const CustomListModal: React.FC<AddGroceryToListModalProps> = ({
@@ -34,6 +35,7 @@ const CustomListModal: React.FC<AddGroceryToListModalProps> = ({
   loading,
   onClose,
   onSelectList,
+  itemCountLabel = "פריטים", // Default to "פריטים"
 }) => {
   return (
     <Modal
@@ -84,7 +86,7 @@ const CustomListModal: React.FC<AddGroceryToListModalProps> = ({
                         </Text>
                         {item.itemCount !== undefined && (
                           <Text className="text-sm text-gray-500 text-right">
-                            {item.itemCount} פריטים
+                            {item.itemCount} {itemCountLabel}
                           </Text>
                         )}
                       </View>
