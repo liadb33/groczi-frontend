@@ -140,7 +140,18 @@ const GroceryInfoScreen = () => {
 
 
   const handlePlusPress = () => openAddToListModal();
-  const handleStarPress = () => console.log("⭐");
+  
+  const handleStarPress = () => {
+    if (currentItem?.itemCode) {
+      router.push({
+        pathname: '/priceHistory',
+        params: {
+          itemCode: currentItem.itemCode,
+          itemName: currentItem.itemName || 'Product'
+        }
+      });
+    }
+  };
 
   if (isLoading || !currentItem) {
     return (

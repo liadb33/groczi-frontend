@@ -49,3 +49,9 @@ export const fetchStoresByGroceryItemCode = async (itemCode: string) => {
   const res = await fetch(`${API_URL}/groceries/${itemCode}/stores`);
   return res.json();
 };
+
+// GET /groceries/:itemCode/price-history
+export const fetchGroceryPriceHistory = async (itemCode: string) => {
+  const res = await fetch(`${API_URL}/groceries/${itemCode}/price-history`);
+  return res.json();
+};

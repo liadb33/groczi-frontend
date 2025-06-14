@@ -108,6 +108,7 @@ declare interface ListDetailsStore {
 declare interface GroceryStore {
   groceries: DetailedGroceryItem[];
   groceriesResults: SavedGroceryItemType[];
+  priceHistory: StorePriceHistory[];
   currentItem: DetailedGroceryItem | null;
   itemStores: GroceryStoreInfoProps[];
   minPrice?: String;
@@ -126,7 +127,19 @@ declare interface GroceryStore {
   search: (term: string, page?: number, limit?: number) => Promise<void>;
   fetchItemDetail: (itemCode: string) => Promise<void>;
   fetchItemStores: (itemCode: string) => Promise<void>;
+  fetchPriceHistory: (itemCode: string) => Promise<void>;
 };
+
+declare interface PricePoint {
+  date: string; // ISO string
+  price: number;
+}
+
+declare interface StorePriceHistory {
+  store_id: string;
+  store_name: string;
+  prices: PricePoint[];
+}
 
 // Grocery Store Info
 declare interface GroceryStoreInfoProps {

@@ -3,7 +3,7 @@ import { addCartItem, fetchCart, removeCartItem, updateCartItemQuantity } from "
 import { addListItem, createList, deleteListItem, deleteLists, fetchListDetail, fetchLists, updateListItemQuantity, updateListName } from "@/utils/api/lists";
 import { mapCartResponseToCartItems } from "@/utils/mappers/cartMapper";
 import { create } from "zustand";
-import { fetchAllGroceries, fetchGroceryByItemCode, fetchStoresByGroceryItemCode, searchGroceries } from "@/utils/api/groceries";
+import { fetchAllGroceries, fetchGroceryByItemCode, fetchGroceryPriceHistory, fetchStoresByGroceryItemCode, searchGroceries } from "@/utils/api/groceries";
 import { fetchAllPromotions, fetchDiscountedGroceriesByPromotionId, fetchPromotionsByGroceryItemCode, fetchPromotionsByStore, fetchPromotionsGroupedByStore } from "@/utils/api/promotions";
 import { fetchAllStores } from "@/utils/api/stores";
 import { optimizeMultiStoreList, optimizeSingleStoreList } from "@/utils/api/optimization";
@@ -222,6 +222,7 @@ export const useListStore = create<ListStore>((set, get) => ({
 export const useGroceryStore = create<GroceryStore>((set) => ({
   groceries: [],
   groceriesResults: [],
+  priceHistory: [],
   currentItem: null,
   itemStores: [],
   page: 1,
@@ -249,7 +250,8 @@ export const useGroceryStore = create<GroceryStore>((set) => ({
     try {
       const res = await searchGroceries(term, page, limit);
       set((state) => ({
-        groceriesResults: page === 1 ? res.data : [...state.groceriesResults, ...res.data],
+        groceriesResults:
+          page === 1 ? res.data : [...state.groceriesResults, ...res.data],
         page: res.page,
         totalPages: res.totalPages,
       }));
@@ -278,6 +280,17 @@ export const useGroceryStore = create<GroceryStore>((set) => ({
       });
     } catch (error) {
       console.error("Failed to fetch item stores:", error);
+    }
+  },
+  fetchPriceHistory: async (itemCode: string) => {
+    set({ isLoading: true });
+    try {
+      const res = await fetchGroceryPriceHistory(itemCode);
+      set({ priceHistory: res.price_history });
+    } catch (error) {
+      console.error("Failed to fetch price history:", error);
+    } finally {
+      set({ isLoading: false });
     }
   },
 }));
