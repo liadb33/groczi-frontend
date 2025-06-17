@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image, I18nManager } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { PLACEHOLDER_IMAGE } from "@/constants/Placeholders";
 
 const CartItem: React.FC<CartItemProps> = ({
   item,
@@ -9,7 +10,6 @@ const CartItem: React.FC<CartItemProps> = ({
   onImagePress,
   onPress,
 }) => {
-
 
   const displayPrice = item.price ?? parseFloat(item.subtotal ?? "0");
 
@@ -43,9 +43,9 @@ const CartItem: React.FC<CartItemProps> = ({
         {/* Image */}
         <View className="ml-3">
           <Image
-            source={{ uri: item.imageUrl }}
-            className="w-16 h-16 rounded-lg"
-            resizeMode="cover"
+            source={{ uri: item.imageUrl ?? PLACEHOLDER_IMAGE }}
+            className="w-24 h-24 rounded-lg"
+            resizeMode="contain"
           />
         </View>
 

@@ -124,7 +124,7 @@ export default function ListInfoScreen() {
             className="rounded-full overflow-hidden"
           >
             <LinearGradient
-              colors={["#5382A6", "#08263E"]}
+              colors={["#2563EB", "#1D4ED8"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
               className="py-3 items-center justify-center rounded-full"

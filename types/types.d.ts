@@ -115,6 +115,11 @@ declare interface GroceryStore {
   page: number;
   totalPages: number;
   isLoading: boolean;
+  // Pagination fields for item stores
+  storesPage: number;
+  storesTotalPages: number;
+  storesHasNextPage: boolean;
+  isLoadingStores: boolean;
 
   fetchGroceries: (params?: {
     minPrice?: number;
@@ -126,7 +131,8 @@ declare interface GroceryStore {
 
   search: (term: string, page?: number, limit?: number) => Promise<void>;
   fetchItemDetail: (itemCode: string) => Promise<void>;
-  fetchItemStores: (itemCode: string) => Promise<void>;
+  fetchItemStores: (itemCode: string, page?: number, limit?: number) => Promise<void>;
+  loadMoreStores: (itemCode: string) => Promise<void>;
   fetchPriceHistory: (itemCode: string) => Promise<void>;
 };
 
@@ -152,7 +158,7 @@ declare interface GroceryStoreInfoProps {
   StoreName: string;
   Address: string;
   City: string;
-  ZipCode: string;
+  distance?: number; // Distance in kilometers when user coordinates are provided
   subchains?: {
     imageUrl?: string;
     SubChainName?: string;
@@ -366,7 +372,6 @@ declare interface StoreWithPromotions {
   storeName: string;
   address: string;
   city: string;
-  zipcode: string | null;
   latitude: number;
   longitude: number;
   promotions: PromotionItem[];
@@ -407,7 +412,6 @@ declare interface Store {
   StoreName?: string | null;
   Address?: string | null;
   City?: string | null;
-  ZipCode?: string | null;
   Latitude?: number | null;
   Longitude?: number | null;
   subchains?: {
@@ -464,10 +468,9 @@ declare interface SingleStoreEvaluation {
   address: string;
   latitude: number;
   longitude: number;
-  chain_id: string;
-  sub_chain_id: string;
+  chainId: string;
+  subChainId: string;
   city: string;
-  zipcode: string;
   combined_score: number;
   item_cost_at_store: number;
   travel_cost_to_store: number;
@@ -488,10 +491,9 @@ declare interface MultiStoreSolution {
       address: string;
       latitude: number;
       longitude: number;
-      chain_id: string;
-      sub_chain_id: string;
+      chainId: string;
+      subChainId: string;
       city: string;
-      zipcode: string;
       items: {
         itemCode: string;
         itemName: string;

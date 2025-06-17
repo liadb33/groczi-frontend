@@ -29,8 +29,8 @@ const EmptyOrErrorComponent: React.FC<EmptyOrErrorComponentProps> = ({
     return (
       <View className="flex-1 justify-center items-center py-10 px-5">
         <Ionicons name="alert-circle-outline" size={48} color="red" />
-        <Text className="text-red-500 text-lg text-center mt-2">Error: {error}</Text>
-        <Text className="text-gray-600 text-center mt-1">Please try again later.</Text>
+        <Text className="text-red-500 text-lg text-center mt-2">שגיאה: {error}</Text>
+        <Text className="text-gray-600 text-center mt-1">אנא נסה שוב מאוחר יותר.</Text>
       </View>
     );
   }
@@ -39,8 +39,8 @@ const EmptyOrErrorComponent: React.FC<EmptyOrErrorComponentProps> = ({
     return (
       <View className="flex-1 justify-center items-center py-10">
         <Ionicons name="cart-outline" size={48} color="#9CA3AF" />
-        <Text className="text-gray-500 text-lg mt-2">Your cart is empty</Text>
-        <Text className="text-gray-400 text-center mt-1">Add items to start comparing prices.</Text>
+        <Text className="text-gray-500 text-lg mt-2">העגלה שלך ריקה</Text>
+        <Text className="text-gray-400 text-center mt-1">הוסף מוצרים כדי להתחיל להשוות מחירים.</Text>
       </View>
     );
   }
@@ -49,8 +49,8 @@ const EmptyOrErrorComponent: React.FC<EmptyOrErrorComponentProps> = ({
     return (
       <View className="flex-1 justify-center items-center py-10">
         <Ionicons name="location-outline" size={48} color="#9CA3AF" />
-        <Text className="text-gray-500 text-lg mt-2">Location required</Text>
-        <Text className="text-gray-400 text-center mt-1">Enable location services to find stores.</Text>
+        <Text className="text-gray-500 text-lg mt-2">נדרש מיקום</Text>
+        <Text className="text-gray-400 text-center mt-1">אפשר שירותי מיקום כדי למצוא חנויות.</Text>
       </View>
     );
   }
@@ -59,8 +59,8 @@ const EmptyOrErrorComponent: React.FC<EmptyOrErrorComponentProps> = ({
     return (
       <View className="flex-1 justify-center items-center py-10 px-5">
         <Ionicons name="sad-outline" size={48} color="#9CA3AF" />
-        <Text className="text-gray-600 text-lg text-center mt-2">No suitable stores found</Text>
-        <Text className="text-gray-500 text-center mt-1">Try changing your preferences or product list.</Text>
+        <Text className="text-gray-600 text-lg text-center mt-2">לא נמצאו חנויות מתאימות</Text>
+        <Text className="text-gray-500 text-center mt-1">נסה לשנות את ההעדפות או רשימת המוצרים שלך.</Text>
       </View>
     );
   }
@@ -69,8 +69,8 @@ const EmptyOrErrorComponent: React.FC<EmptyOrErrorComponentProps> = ({
     return (
       <View className="flex-1 justify-center items-center py-10 px-5">
         <Ionicons name="map-outline" size={48} color="#9CA3AF" />
-        <Text className="text-gray-600 text-lg text-center mt-2">No multi-store solutions found</Text>
-        <Text className="text-gray-500 text-center mt-1">Try increasing the distance limit or maximum number of stores.</Text>
+        <Text className="text-gray-600 text-lg text-center mt-2">לא נמצאו פתרונות מרובי חנויות</Text>
+        <Text className="text-gray-500 text-center mt-1">נסה להגדיל את מגבלת המרחק או מספר החנויות המקסימלי.</Text>
       </View>
     );
   }

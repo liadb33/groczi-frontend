@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, ScrollView, TouchableOpacity, I18nManager, ActivityIndicator } from "react-native";
+import { View, Text, Image, ScrollView, TouchableOpacity, I18nManager, ActivityIndicator, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"; // Using Expo's vector icons
 import { router, useLocalSearchParams } from "expo-router"; // For back navigation
@@ -18,7 +18,10 @@ const GroceryInfoScreen = () => {
     itemStores,
     fetchItemDetail,
     fetchItemStores,
+    loadMoreStores,
     isLoading,
+    isLoadingStores,
+    storesHasNextPage,
     minPrice,
   } = useGroceryStore();
   const { addToCart, cartItems } = useCartStore();
@@ -153,7 +156,59 @@ const GroceryInfoScreen = () => {
     }
   };
 
-  if (isLoading || !currentItem) {
+  // Render function for store item
+  const renderStoreItem = ({ item: store }: { item: any }) => (
+    <View className="flex-row-reverse items-center bg-white p-4 rounded-xl mb-3 shadow-sm border border-gray-50 mx-4">
+      {/* Store Logo - Right Side (RTL) */}
+      <Image
+        source={{
+          uri: store.subchains?.imageUrl ?? PLACEHOLDER_IMAGE,
+        }}
+        className="w-12 h-12 rounded-lg bg-gray-100"
+        resizeMode="contain"
+      />
+      
+      {/* Store Info - Middle */}
+      <View className="flex-1 mx-3">
+        <Text className="text-base font-bold text-gray-900 text-right mb-1">
+          {store.StoreName}
+        </Text>
+        <Text className="text-sm text-gray-500 text-right mb-1">
+          {store.Address}, {store.City}
+        </Text>
+        {store.distance !== undefined && (
+          <Text className="text-sm text-blue-500 text-right">
+            {store.distance.toFixed(2)} ק"מ ממך
+          </Text>
+        )}
+      </View>
+      
+      {/* Price - Left Side (RTL) */}
+      <Text className="text-lg font-bold text-gray-900">
+        ₪{store.itemPrice}
+      </Text>
+    </View>
+  );
+
+  // Handle load more stores
+  const handleLoadMoreStores = () => {
+    if (currentItem?.itemCode && storesHasNextPage && !isLoadingStores) {
+      loadMoreStores(currentItem.itemCode);
+    }
+  };
+
+  // Footer component for loading more
+  const renderFooter = () => {
+    if (!isLoadingStores) return null;
+    return (
+      <View className="py-4 items-center">
+        <ActivityIndicator size="small" color="#5382A6" />
+      </View>
+    );
+  };
+
+  // Show loading if we're loading, no current item, or the current item doesn't match the requested itemCode
+  if (isLoading || !currentItem || currentItem.itemCode !== itemCode) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
         <ActivityIndicator size="large" color="#5382A6" />
@@ -224,41 +279,16 @@ const GroceryInfoScreen = () => {
           </TouchableOpacity>
 
           {/* Stores List */}
-          <View className="px-4">
-            {itemStores.map((store) => (
-              <View
-                key={`${store.ChainId}-${store.SubChainId}-${store.StoreId}`}
-                className="flex-row-reverse items-center bg-white p-4 rounded-xl mb-3 shadow-sm border border-gray-50"
-              >
-                {/* Store Logo - Right Side (RTL) */}
-                <Image
-                  source={{
-                    uri: store.subchains?.imageUrl ?? PLACEHOLDER_IMAGE,
-                  }}
-                  className="w-12 h-12 rounded-lg bg-gray-100"
-                  resizeMode="cover"
-                />
-                
-                {/* Store Info - Middle */}
-                <View className="flex-1 mx-3">
-                  <Text className="text-base font-bold text-gray-900 text-right mb-1">
-                    {store.StoreName}
-                  </Text>
-                  <Text className="text-sm text-gray-500 text-right mb-1">
-                    {store.Address}, {store.City}
-                  </Text>
-                  <Text className="text-sm text-blue-500 text-right">
-                    2 ק"מ ממך
-                  </Text>
-                </View>
-                
-                {/* Price - Left Side (RTL) */}
-                <Text className="text-lg font-bold text-gray-900">
-                  ₪{store.itemPrice}
-                </Text>
-              </View>
-            ))}
-          </View>
+          <FlatList
+            data={itemStores}
+            renderItem={renderStoreItem}
+            keyExtractor={(store, index) => `${store.ChainId}-${store.SubChainId}-${store.StoreId}-${store.itemCode}-${index}`}
+            onEndReached={handleLoadMoreStores}
+            onEndReachedThreshold={0.1}
+            ListFooterComponent={renderFooter}
+            scrollEnabled={false}
+            showsVerticalScrollIndicator={false}
+          />
         </View>
 
         <CustomListModal

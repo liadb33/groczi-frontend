@@ -1,13 +1,15 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import StoreItemInSolution from './StoreItemInSolution';
+import { PLACEHOLDER_IMAGE } from '@/constants/Placeholders';
 
 interface StoreInSolutionItemProps {
   storeName: string;
   storeData: NonNullable<MultiStoreSolution['assignments']>[string];
   solutionKey: string;
   isExpanded: boolean;
+  stores: Store[];
   onToggleExpansion: () => void;
   onNavigate?: (address: string) => void;
 }
@@ -17,12 +19,20 @@ const StoreInSolutionItem: React.FC<StoreInSolutionItemProps> = ({
   storeData,
   solutionKey,
   isExpanded,
+  stores,
   onToggleExpansion,
   onNavigate,
 }) => {
   // Determine if items list needs to be scrollable
   const maxDisplayItems = 5; // Show 5 items before scrolling
   const needsScroll = storeData.items.length > maxDisplayItems;
+
+  // Find the store image
+  const storeImage = stores.find(store => 
+    store.ChainId === storeData.chainId && 
+    store.SubChainId === storeData.subChainId && 
+    store.StoreId === storeData.store_id
+  );
 
   const handleNavigate = () => {
     if (onNavigate) {
@@ -56,14 +66,28 @@ const StoreInSolutionItem: React.FC<StoreInSolutionItemProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* Right: Store info */}
-        <View className="flex-1 mr-3 items-end">
-          <Text className="text-lg font-bold text-gray-800 text-right">
-            {storeName}
-          </Text>
-          <Text className="text-sm text-gray-500 text-right">
-            {storeData.address}
-          </Text>
+        {/* Right: Store info and image */}
+        <View className="flex-row-reverse items-center">
+          {/* Store Image */}
+          <View className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 ml-3">
+            <Image
+              source={{
+                uri: storeImage?.subchains?.imageUrl ?? PLACEHOLDER_IMAGE,
+              }}
+              className="w-full h-full"
+              resizeMode="contain"
+            />
+          </View>
+          
+          {/* Store Info */}
+          <View className="items-end">
+            <Text className="text-lg font-bold text-gray-800 text-right">
+              {storeName}
+            </Text>
+            <Text className="text-sm text-gray-500 text-right">
+              {storeData.address}
+            </Text>
+          </View>
         </View>
       </View>
 
@@ -90,7 +114,7 @@ const StoreInSolutionItem: React.FC<StoreInSolutionItemProps> = ({
                   idx: number
                 ) => (
                   <StoreItemInSolution
-                    key={`${item.itemCode}-${idx}`}
+                    key={`${storeData.chainId}-${storeData.subChainId}-${storeData.store_id}-${item.itemCode}-${idx}`}
                     item={item}
                   />
                 )
@@ -108,7 +132,7 @@ const StoreInSolutionItem: React.FC<StoreInSolutionItemProps> = ({
                 idx: number
               ) => (
                 <StoreItemInSolution
-                  key={`${item.itemCode}-${idx}`}
+                  key={`${storeData.chainId}-${storeData.subChainId}-${storeData.store_id}-${item.itemCode}-${idx}`}
                   item={item}
                 />
               )

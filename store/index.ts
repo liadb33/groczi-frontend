@@ -1,7 +1,6 @@
 import { addBookmark, fetchBookmarks, removeBookmark } from "@/utils/api/bookmarks";
 import { addCartItem, fetchCart, removeCartItem, updateCartItemQuantity } from "@/utils/api/cart";
 import { addListItem, createList, deleteListItem, deleteLists, fetchListDetail, fetchLists, updateListItemQuantity, updateListName } from "@/utils/api/lists";
-import { mapCartResponseToCartItems } from "@/utils/mappers/cartMapper";
 import { create } from "zustand";
 import { fetchAllGroceries, fetchGroceryByItemCode, fetchGroceryPriceHistory, fetchStoresByGroceryItemCode, searchGroceries } from "@/utils/api/groceries";
 import { fetchAllPromotions, fetchDiscountedGroceriesByPromotionId, fetchPromotionsByGroceryItemCode, fetchPromotionsByStore, fetchPromotionsGroupedByStore } from "@/utils/api/promotions";
@@ -68,14 +67,24 @@ export const useCartStore = create<CartStore>((set, get) => ({
   isLoading: false,
 
   setCartItems: (rawData: any) => {
-    set({ cartItems: mapCartResponseToCartItems(rawData) });
+    const cartItems = rawData.items.map((item: any) => ({
+      ...item,
+      id: item.cartItemId,
+      price: Number(item.subtotal),
+    }));
+    set({ cartItems });
   },
 
   loadCart: async () => {
     set({ isLoading: true });
     try {
       const cart = await fetchCart();
-      set({ cartItems: mapCartResponseToCartItems(cart) });
+      const cartItems = cart.items.map((item: any) => ({
+        ...item,
+        id: item.cartItemId,
+        price: Number(item.subtotal),
+      }));
+      set({ cartItems });
     } catch (error) {
       console.error("Failed to load cart:", error);
     } finally {
@@ -88,7 +97,12 @@ export const useCartStore = create<CartStore>((set, get) => ({
   removeFromCart: async (cartItemId: string) => {
     try {
       const updatedCart = await removeCartItem(cartItemId);
-      set({ cartItems: mapCartResponseToCartItems(updatedCart) });
+      const cartItems = updatedCart.items.map((item: any) => ({
+        ...item,
+        id: item.cartItemId,
+        price: Number(item.subtotal),
+      }));
+      set({ cartItems });
     } catch (error) {
       console.error("Failed to remove from cart:", error);
     }
@@ -97,7 +111,12 @@ export const useCartStore = create<CartStore>((set, get) => ({
   incrementQuantity: async (cartItemId: string) => {
     try {
       const updatedCart = await updateCartItemQuantity(cartItemId, 1);
-      set({ cartItems: mapCartResponseToCartItems(updatedCart) });
+      const cartItems = updatedCart.items.map((item: any) => ({
+        ...item,
+        id: item.cartItemId,
+        price: Number(item.subtotal),
+      }));
+      set({ cartItems });
     } catch (error) {
       console.error("Failed to increment quantity:", error);
     }
@@ -112,10 +131,20 @@ export const useCartStore = create<CartStore>((set, get) => ({
 
       if (currentItem.quantity <= 1) {
         const updatedCart = await removeCartItem(cartItemId);
-        set({ cartItems: mapCartResponseToCartItems(updatedCart) });
+        const cartItems = updatedCart.items.map((item: any) => ({
+          ...item,
+          id: item.cartItemId,
+          price: Number(item.subtotal),
+        }));
+        set({ cartItems });
       } else {
         const updatedCart = await updateCartItemQuantity(cartItemId, -1);
-        set({ cartItems: mapCartResponseToCartItems(updatedCart) });
+        const cartItems = updatedCart.items.map((item: any) => ({
+          ...item,
+          id: item.cartItemId,
+          price: Number(item.subtotal),
+        }));
+        set({ cartItems });
       }
     } catch (error) {
       console.error("Failed to decrement quantity:", error);
@@ -135,7 +164,12 @@ export const useCartStore = create<CartStore>((set, get) => ({
         updatedCart = await addCartItem(itemCode, 1);
       }
 
-      set({ cartItems: mapCartResponseToCartItems(updatedCart) });
+      const newCartItems = updatedCart.items.map((item: any) => ({
+        ...item,
+        id: item.cartItemId,
+        price: Number(item.subtotal),
+      }));
+      set({ cartItems: newCartItems });
     } catch (err) {
       console.error("Failed to add to cart:", err);
     }
@@ -219,7 +253,7 @@ export const useListStore = create<ListStore>((set, get) => ({
 }));
 
 // Grocery Store
-export const useGroceryStore = create<GroceryStore>((set) => ({
+export const useGroceryStore = create<GroceryStore>((set, get) => ({
   groceries: [],
   groceriesResults: [],
   priceHistory: [],
@@ -228,6 +262,11 @@ export const useGroceryStore = create<GroceryStore>((set) => ({
   page: 1,
   totalPages: 1,
   isLoading: false,
+  // Pagination fields for item stores
+  storesPage: 1,
+  storesTotalPages: 1,
+  storesHasNextPage: false,
+  isLoadingStores: false,
 
   fetchGroceries: async (params) => {
     set({ isLoading: true });
@@ -271,17 +310,41 @@ export const useGroceryStore = create<GroceryStore>((set) => ({
     }
   },
 
-  fetchItemStores: async (itemCode) => {
+  fetchItemStores: async (itemCode, page = 1, limit = 10) => {
+    set({ isLoadingStores: true });
     try {
-      const res = await fetchStoresByGroceryItemCode(itemCode);
-      set({
-        itemStores: res.stores,
-        minPrice: res.minPrice, // ✅ store the lowest price (optional)
-      });
+      // Get user coordinates from location store
+      const locationStore = useLocationStore.getState();
+      const { userLatitude, userLongitude } = locationStore;
+      
+      const res = await fetchStoresByGroceryItemCode(
+        itemCode, 
+        page, 
+        limit,
+        userLatitude !== null ? userLatitude : undefined,
+        userLongitude !== null ? userLongitude : undefined
+      );
+      set((state) => ({
+        itemStores: page === 1 ? res.stores : [...state.itemStores, ...res.stores],
+        minPrice: res.minPrice,
+        storesPage: res.page,
+        storesTotalPages: res.totalPages,
+        storesHasNextPage: res.hasNextPage,
+        isLoadingStores: false,
+      }));
     } catch (error) {
       console.error("Failed to fetch item stores:", error);
+      set({ isLoadingStores: false });
     }
   },
+
+  loadMoreStores: async (itemCode) => {
+    const { storesPage, storesTotalPages, isLoadingStores } = get();
+    if (isLoadingStores || storesPage >= storesTotalPages) return;
+    
+    await get().fetchItemStores(itemCode, storesPage + 1);
+  },
+
   fetchPriceHistory: async (itemCode: string) => {
     set({ isLoading: true });
     try {
@@ -500,7 +563,7 @@ export const useOptimizationStore = create<OptimizationStore>((set) => ({
       const result = await optimizeSingleStoreList(params);
       set({ singleStoreResult: result, isLoading: false });
     } catch (e: any) {
-      set({ error: e.message || "Failed to optimize (single store)", isLoading: false });
+      set({ error: e.message || "שגיאה באופטימיזציה לחנות יחידה", isLoading: false });
     }
   },
 
@@ -510,7 +573,7 @@ export const useOptimizationStore = create<OptimizationStore>((set) => ({
       const result = await optimizeMultiStoreList(params);
       set({ multiStoreResult: result, isLoading: false });
     } catch (e: any) {
-      set({ error: e.message || "Failed to optimize (multi store)", isLoading: false });
+      set({ error: e.message || "שגיאה באופטימיזציה למספר חנויות", isLoading: false });
     }
   },
 
@@ -556,13 +619,13 @@ export const useCategoryStore = create<CategoryStore>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await fetchGroceriesByCategories(categories, page, limit);
-      set({
-        groceries: res.data,
+      set((state) => ({
+        groceries: page === 1 ? res.data : [...state.groceries, ...res.data],
         page: res.page,
         totalPages: res.totalPages,
         selectedCategories: categories,
         isLoading: false,
-      });
+      }));
     } catch (err: any) {
       set({
         error: err.message ?? "Failed to fetch groceries",

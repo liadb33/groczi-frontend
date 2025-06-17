@@ -18,7 +18,7 @@ export async function optimizeSingleStoreList(
   if (!response.ok) {
     // You can improve error handling as needed (e.g. show error to user)
     const error = await response.json().catch(() => ({}));
-    throw new Error(error?.message || "Failed to optimize for single store");
+    throw new Error(error?.message || "שגיאה באופטימיזציה לחנות יחידה");
   }
 
   return await response.json();
@@ -40,7 +40,7 @@ export async function optimizeMultiStoreList(
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error?.message || "Failed to optimize for multi-store");
+    throw new Error(error?.message || "לא נמצאו פתרונות אופטימליים עבור מספר חנויות. אנא נסה שוב מאוחר יותר או הגדל את מגבלות המרחק והחנויות");
   }
 
   return await response.json();

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { PLACEHOLDER_IMAGE } from '@/constants/Placeholders';
 
 const GrocerySavedCard: React.FC<GrocerySavedCardProps> = ({ 
   item, 
@@ -17,8 +18,8 @@ const GrocerySavedCard: React.FC<GrocerySavedCardProps> = ({
     >
       {/* Right: Image */}
       <Image
-        source={{ uri: item.imageUrl }}
-        className="w-20 h-20 rounded-lg"
+        source={{ uri: item.imageUrl ?? PLACEHOLDER_IMAGE }}
+        className="w-24 h-24 rounded-lg"
         resizeMode="cover"
       />
 

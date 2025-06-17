@@ -52,6 +52,10 @@ const GroceryResultsScreen = () => {
                     isPromotionMode ? promotionLoading : 
                     (isCategoryMode || isMultiCategoryMode) ? categoryLoading : false;
   
+  // Check if this is initial loading (no data yet) vs pagination loading (has data)
+  const isInitialLoading = isLoading && currentData.length === 0;
+  const isPaginationLoading = isLoading && currentData.length > 0;
+  
   const currentPage = isSearchMode ? page : 
                       (isCategoryMode || isMultiCategoryMode) ? categoryPage : 1;
   
@@ -149,7 +153,8 @@ const GroceryResultsScreen = () => {
   }, [cartItems, pendingAddItemCode]);
 
   const renderFooter = () => {
-    if (!isLoading) return null;
+    // Show loading indicator when paginating (has existing data and loading more)
+    if (!isPaginationLoading) return null;
     return (
       <View style={{ paddingVertical: 20 }}>
         <ActivityIndicator size="large" color="#5382A6" />
@@ -171,7 +176,8 @@ const GroceryResultsScreen = () => {
     );
   }
 
-  if (isLoading) {
+  // Only show shimmer on initial loading when there's no data yet
+  if (isInitialLoading) {
     return (
       <View className="flex-1 bg-gray-50">
         <AppHeader title={headerTitle} />
@@ -203,9 +209,9 @@ const GroceryResultsScreen = () => {
     <View className="flex-1 bg-gray-50">
       <AppHeader title={headerTitle} />
 
-      {((isPromotionMode && currentData.length === 0 && !isLoading) || 
-        (isCategoryMode && currentData.length === 0 && !isLoading) ||
-        (isMultiCategoryMode && currentData.length === 0 && !isLoading)) ? (
+      {((isPromotionMode && currentData.length === 0 && !isInitialLoading) || 
+        (isCategoryMode && currentData.length === 0 && !isInitialLoading) ||
+        (isMultiCategoryMode && currentData.length === 0 && !isInitialLoading)) ? (
         <View className="flex-1 justify-center items-center">
           <Text className="text-gray-600 text-lg">
             {isPromotionMode ? `לא נמצאו מוצרים תחת קוד המבצע: ${promotionId}` : 
@@ -238,7 +244,7 @@ const GroceryResultsScreen = () => {
           numColumns={2}
           columnWrapperStyle={{ justifyContent: "space-between" }}
           onEndReached={(isSearchMode || isCategoryMode || isMultiCategoryMode) ? loadMore : undefined}
-          onEndReachedThreshold={0.5}
+          onEndReachedThreshold={0.01}
           ListFooterComponent={renderFooter}
           contentContainerStyle={{ paddingHorizontal: 10, paddingTop: 10 }}
         />

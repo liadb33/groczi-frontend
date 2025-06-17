@@ -45,8 +45,24 @@ export const fetchGroceryByItemCode = async (itemCode: string) => {
 };
 
 // GET /groceries/:id/stores
-export const fetchStoresByGroceryItemCode = async (itemCode: string) => {
-  const res = await fetch(`${API_URL}/groceries/${itemCode}/stores`);
+export const fetchStoresByGroceryItemCode = async (
+  itemCode: string,
+  page: number = 1,
+  limit: number = 10,
+  userLatitude?: number,
+  userLongitude?: number
+) => {
+  const url = new URL(`${API_URL}/groceries/${itemCode}/stores`);
+  url.searchParams.append("page", page.toString());
+  url.searchParams.append("limit", limit.toString());
+  
+  // Add user coordinates if provided
+  if (userLatitude !== undefined && userLongitude !== undefined) {
+    url.searchParams.append("userLatitude", userLatitude.toString());
+    url.searchParams.append("userLongitude", userLongitude.toString());
+  }
+  
+  const res = await fetch(url.toString());
   return res.json();
 };
 

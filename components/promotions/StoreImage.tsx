@@ -33,7 +33,7 @@ const StoreImage: React.FC<StoreImageProps> = ({
         <Image
           source={{ uri: storeImageUrl }}
           className="w-full h-full"
-          resizeMode="cover"
+          resizeMode="contain"
         />
       ) : (
         <MaterialCommunityIcons

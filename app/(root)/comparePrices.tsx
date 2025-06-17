@@ -16,7 +16,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Settings, ChevronsUpDown, ChevronDown, ChevronUp, ShoppingCart } from "lucide-react-native"; // Added ChevronsUpDown
-import { useOptimizationStore, useLocationStore, useSettingsStore } from "@/store";
+import { useOptimizationStore, useLocationStore, useSettingsStore, useStores } from "@/store";
 import CustomListModal from "@/components/grocery/CustomListModal";
 import AppHeader from "@/components/header/AppHeader";
 import HeaderComponent from "@/components/comparePrices/HeaderComponent";
@@ -25,6 +25,7 @@ import MultiStoreSolutionItem from "@/components/comparePrices/MultiStoreSolutio
 import LoadingComponent from "@/components/ui/LoadingComponent";
 import SingleStoreItemCard from "@/components/comparePrices/SingleStoreItemCard";
 import OptimizationTypeDropdown from "@/components/comparePrices/OptimizationTypeDropdown";
+import { PLACEHOLDER_IMAGE } from '@/constants/Placeholders';
 
 const OPTION_SINGLE_STORE = "חנות יחידה";
 const OPTION_MULTI_STORE = "מספר חנויות";
@@ -57,6 +58,7 @@ export default function ComparePricesScreen() {
   const { userLatitude, userLongitude } = useLocationStore();
   const { setDestinationLocation } = useLocationStore();
   const { maxStoreDistance, maxTravelDistance, maxStores } = useSettingsStore();
+  const { stores, fetchStores } = useStores();
 
   // Local state
   const [selectedChip, setSelectedChip] = useState<"מרחק" | "עלות" | null>(null);
@@ -83,6 +85,8 @@ export default function ComparePricesScreen() {
   useEffect(() => {
     // Clear previous results when the screen mounts or groceries change
     clearResults(); 
+    // Fetch stores data for store images
+    fetchStores();
     if (groceries.length > 0 && userLatitude && userLongitude) {
       if (selectedOption === OPTION_SINGLE_STORE) {
         runSingleStoreOptimizationHandler(null); // Pass null for default lambda
@@ -90,7 +94,7 @@ export default function ComparePricesScreen() {
         runMultiStoreOptimizationHandlerWithParams();
       }
     }
-  }, [groceries, userLatitude, userLongitude]); // Removed selectedOption from deps to avoid re-fetch on tab switch before results
+  }, [groceries, userLatitude, userLongitude, fetchStores]); // Removed selectedOption from deps to avoid re-fetch on tab switch before results
 
   // Show modal for single-store partial match
   useEffect(() => {
@@ -227,15 +231,25 @@ export default function ComparePricesScreen() {
   };
 
   // Render function for single store item cards
-  const renderSingleStoreItemCard = ({ item }: { item: SingleStoreEvaluation }) => (
-    <SingleStoreItemCard
-      item={item}
-      isPartialMatch={singleStoreResult?.is_partial_match || false}
-      groceries={groceries}
-      onNavigate={handleNavigateToStore}
-      onShowMissingItems={handleShowMissingItems}
-    />
-  );
+  const renderSingleStoreItemCard = ({ item }: { item: SingleStoreEvaluation }) => {
+    // Find the store with matching chainId, subChainId, and storeId
+    const storeData = stores.find(store => 
+      store.ChainId === item.chainId && 
+      store.SubChainId === item.subChainId && 
+      store.StoreId === item.store_id
+    );
+    
+    return (
+      <SingleStoreItemCard
+        item={item}
+        isPartialMatch={singleStoreResult?.is_partial_match || false}
+        groceries={groceries}
+        storeImageUrl={storeData?.subchains?.imageUrl ?? PLACEHOLDER_IMAGE}
+        onNavigate={handleNavigateToStore}
+        onShowMissingItems={handleShowMissingItems}
+      />
+    );
+  };
 
   // Handler for toggling store expansion within solutions
   const handleToggleStoreExpansion = (storeKey: string) => {
@@ -271,6 +285,7 @@ export default function ComparePricesScreen() {
         solutionKey={solutionKey}
         isExpanded={isExpanded}
         expandedStoresInSolution={expandedStoresInSolution}
+        stores={stores}
         onToggleSolutionExpansion={() => handleToggleSolutionExpansion(solutionKey)}
         onToggleStoreExpansion={handleToggleStoreExpansion}
         onNavigateToStore={(address) => console.log("Navigate to:", address)}
@@ -292,7 +307,7 @@ export default function ComparePricesScreen() {
         <FlatList<SingleStoreEvaluation>
           data={singleStoreResult?.ranked_stores || []}
           renderItem={renderSingleStoreItemCard}
-          keyExtractor={(item) => item.store_id}
+          keyExtractor={(item) => `${item.chainId}-${item.subChainId}-${item.store_id}`}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 20, paddingTop: 5 }}
           ListHeaderComponent={!isLoading || (singleStoreResult || multiStoreResult) ? (

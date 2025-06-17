@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { PLACEHOLDER_IMAGE } from '@/constants/Placeholders';
 
 interface SingleStoreItemCardProps {
   item: SingleStoreEvaluation;
   isPartialMatch?: boolean;
   groceries?: CustomOptimizationItem[];
+  storeImageUrl?: string;
   onNavigate: (locationData: {
     latitude: number;
     longitude: number;
@@ -21,6 +23,7 @@ const SingleStoreItemCard: React.FC<SingleStoreItemCardProps> = ({
   item,
   isPartialMatch = false,
   groceries = [],
+  storeImageUrl,
   onNavigate,
   onShowMissingItems,
 }) => {
@@ -30,8 +33,8 @@ const SingleStoreItemCard: React.FC<SingleStoreItemCardProps> = ({
       longitude: item.longitude,
       address: item.address,
       storeId: item.store_id,
-      chainId: item.chain_id,
-      subChainId: item.sub_chain_id,
+      chainId: item.chainId,
+      subChainId: item.subChainId,
     });
   };
 
@@ -56,10 +59,10 @@ const SingleStoreItemCard: React.FC<SingleStoreItemCardProps> = ({
         <View className="w-[85%] h-28 rounded-2xl overflow-hidden mb-3">
           <Image
             source={{
-              uri: "https://images.unsplash.com/photo-1540200049848-d9813ea0e120?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+              uri: storeImageUrl ?? PLACEHOLDER_IMAGE,
             }}
             className="w-full h-full"
-            resizeMode="cover"
+            resizeMode="contain"
           />
         </View>
         <TouchableOpacity

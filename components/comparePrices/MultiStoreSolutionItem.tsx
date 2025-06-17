@@ -9,6 +9,7 @@ interface MultiStoreSolutionItemProps {
   solutionKey: string;
   isExpanded: boolean;
   expandedStoresInSolution: { [key: string]: boolean };
+  stores: Store[];
   onToggleSolutionExpansion: () => void;
   onToggleStoreExpansion: (storeKey: string) => void;
   onNavigateToStore?: (address: string) => void;
@@ -20,6 +21,7 @@ const MultiStoreSolutionItem: React.FC<MultiStoreSolutionItemProps> = ({
   solutionKey,
   isExpanded,
   expandedStoresInSolution,
+  stores,
   onToggleSolutionExpansion,
   onToggleStoreExpansion,
   onNavigateToStore,
@@ -71,6 +73,7 @@ const MultiStoreSolutionItem: React.FC<MultiStoreSolutionItemProps> = ({
                 storeData={storeData}
                 solutionKey={solutionKey}
                 isExpanded={isStoreExpanded}
+                stores={stores}
                 onToggleExpansion={() => onToggleStoreExpansion(storeKey)}
                 onNavigate={onNavigateToStore}
               />
