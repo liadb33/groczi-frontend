@@ -3,7 +3,7 @@ import { View, Text, SafeAreaView, ActivityIndicator, TouchableOpacity, Alert, S
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useGroceryStore } from '@/store';
-import { PriceHistoryChart, usePriceHistoryData, STORE_COLORS } from '@/components/PriceHistoryChart';
+import { PriceHistoryChart, usePriceHistoryData, STORE_COLORS, generateUniqueColors } from '@/components/PriceHistoryChart';
 import AppHeader from '@/components/header/AppHeader';
 import CustomListModal from '@/components/grocery/CustomListModal';
 
@@ -164,17 +164,20 @@ export default function PriceHistoryScreen() {
                 <View className="mt-4 mb-2">
                   <Text className="text-sm font-medium text-gray-700 mb-3 text-center">חנויות:</Text>
                   <View className="flex-row flex-wrap justify-center">
-                    {chartMetadata.selectedStores.map((store, index) => (
-                      <View key={store.store_id} className="flex-row items-center mx-3 mb-2">
-                        <View
-                          className="w-3 h-3 rounded-sm mr-2"
-                          style={{ backgroundColor: STORE_COLORS[index % STORE_COLORS.length] }}
-                        />
-                        <Text className="text-xs text-gray-600" numberOfLines={1}>
-                          {store.store_name}
-                        </Text>
-                      </View>
-                    ))}
+                    {(() => {
+                      const legendColors = generateUniqueColors(chartMetadata.selectedStores.length);
+                      return chartMetadata.selectedStores.map((store, index) => (
+                        <View key={store.store_id} className="flex-row items-center mx-3 mb-2">
+                          <View
+                            className="w-3 h-3 rounded-sm mr-2"
+                            style={{ backgroundColor: legendColors[index] }}
+                          />
+                          <Text className="text-xs text-gray-600" numberOfLines={1}>
+                            {store.store_name}
+                          </Text>
+                        </View>
+                      ));
+                    })()}
                   </View>
                 </View>
 

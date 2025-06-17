@@ -21,7 +21,7 @@ interface PriceHistoryChartProps {
    disableShuffling?: boolean;
 }
 
-// Pre-defined colors for store lines
+// Pre-defined colors for store lines (fallback for small numbers)
 export const STORE_COLORS = [
   '#3B82F6', // Blue
   '#EF4444', // Red
@@ -29,6 +29,38 @@ export const STORE_COLORS = [
   '#F59E0B', // Yellow
   '#8B5CF6', // Purple
 ];
+
+// Sophisticated color generation for large numbers of stores
+export const generateUniqueColors = (count: number): string[] => {
+  if (count <= STORE_COLORS.length) {
+    return STORE_COLORS.slice(0, count);
+  }
+
+  const colors: string[] = [];
+  
+  // Use golden ratio for optimal hue distribution
+  const goldenRatio = 0.618033988749;
+  
+  for (let i = 0; i < count; i++) {
+    // Distribute hues evenly using golden ratio for better visual separation
+    const hue = (i * goldenRatio * 360) % 360;
+    
+    // Vary saturation and lightness for additional distinction
+    const saturationBase = 65; // Base saturation for good visibility
+    const lightnessBase = 50;  // Base lightness for good contrast
+    
+    // Add subtle variations to saturation and lightness
+    const saturationVariation = (i % 3) * 10; // 0, 10, 20
+    const lightnessVariation = Math.floor(i / 3) % 4 * 8; // 0, 8, 16, 24
+    
+    const saturation = Math.min(85, saturationBase + saturationVariation);
+    const lightness = Math.max(30, Math.min(70, lightnessBase + lightnessVariation));
+    
+    colors.push(`hsl(${Math.round(hue)}, ${saturation}%, ${lightness}%)`);
+  }
+  
+  return colors;
+};
 
 // Default formatter in case useMemo returns early
 const defaultFormatDate = (value: number) => {
@@ -182,8 +214,18 @@ export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
 
     allPoints.sort((a, b) => a.x - b.x);
 
-    const allDataDates = allPoints.map((p) => p.x);
-    const allPrices = allPoints.map((p) => p.y);
+    // Filter out outlier dates from chart data (older than 1 year)
+    const latestDataDate = allPoints.length > 0 ? Math.max(...allPoints.map(p => p.x)) : Date.now();
+    const oneYearAgoData = latestDataDate - (1 * 365 * 24 * 60 * 60 * 1000); // 1 year in milliseconds
+    
+    // Filter data points to only include recent ones (within 1 year of latest date)
+    const filteredPoints = allPoints.filter(point => point.x >= oneYearAgoData);
+    
+    // Use filtered points if we have any, otherwise use all points
+    const finalDataPoints = filteredPoints.length > 0 ? filteredPoints : allPoints;
+
+    const allDataDates = finalDataPoints.map((p) => p.x);
+    const allPrices = finalDataPoints.map((p) => p.y);
     
     let finalYDomain: [number, number];
     if (allPoints.length === 0) {
@@ -216,9 +258,18 @@ export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
       const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
       currentXDomain = [startOfCurrentMonth.getTime(), endDate.getTime()];
     } else {
-      // Find earliest and latest dates from actual data
-      const earliestDateOverall = new Date(Math.min(...allDataDates));
-      const latestDateOverall = new Date(Math.max(...allDataDates));
+      // Filter out outlier dates to avoid huge time gaps (older than 1 year)
+      const latestDate = Math.max(...allDataDates);
+      const oneYearAgo = latestDate - (1 * 365 * 24 * 60 * 60 * 1000); // 1 year in milliseconds
+      
+      // Filter dates to only include recent data (within 1 year of latest date)
+      const recentDates = allDataDates.filter(date => date >= oneYearAgo);
+      
+      // If we have recent dates, use them; otherwise fall back to all dates
+      const datesToUse = recentDates.length > 0 ? recentDates : allDataDates;
+      
+      const earliestDateOverall = new Date(Math.min(...datesToUse));
+      const latestDateOverall = new Date(Math.max(...datesToUse));
       
       // Start from beginning of earliest month
       const startOfEarliestMonth = new Date(earliestDateOverall.getFullYear(), earliestDateOverall.getMonth(), 1);
@@ -249,7 +300,7 @@ export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
     currentTickCount = Math.min(rangeInMonths, 8); // Cap at 8 to avoid overcrowding
 
     return {
-      chartData: allPoints,
+      chartData: finalDataPoints,
       hasOnlyCurrentPrices: currentHasOnlyCurrentPrices,
       selectedStores: currentSelectedStores,
       yDomain: finalYDomain,
@@ -305,10 +356,12 @@ export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
             }
           });
 
+          const storeColors = generateUniqueColors(selectedStores.length);
+          
           return (
             <>
               {selectedStores.map((store, index) => {
-                const color = STORE_COLORS[index % STORE_COLORS.length];
+                const color = storeColors[index];
                 const skiaStorePoints = pointsByStore.get(store.store_id) || [];
                 
                 if (skiaStorePoints.length === 0) return null;
