@@ -7,6 +7,7 @@ import { fetchAllPromotions, fetchDiscountedGroceriesByPromotionId, fetchPromoti
 import { fetchAllStores } from "@/utils/api/stores";
 import { optimizeMultiStoreList, optimizeSingleStoreList } from "@/utils/api/optimization";
 import { fetchAllCategories, fetchGroceriesByCategories, fetchGroceriesCountByCategory } from "@/utils/api/categories";
+import { loginUser } from "@/utils/api/users";
 
 export const useLocationStore = create<LocationStore>((set) => ({
   userLatitude: null,
@@ -589,6 +590,7 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
   setMaxStoreDistance: (val) => set({ maxStoreDistance: val }),
   setMaxStores: (val) => set({ maxStores: val }),
   setMaxTravelDistance: (val) => set({ maxTravelDistance: val }),
+
 }));
 
 export const useCategoryStore = create<CategoryStore>((set) => ({

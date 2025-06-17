@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { View, Text, ScrollView, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, router } from 'expo-router';
@@ -17,61 +17,15 @@ export default function SettingsScreen() {
   
   // Connect to the settings store
   const { maxStoreDistance, setMaxStoreDistance, maxTravelDistance, setMaxTravelDistance, maxStores, setMaxStores } = useSettingsStore();
-
-  // Go back to the previous screen
-  const handleBack = () => {
-    router.back();
-  };
-
-  // Toggle notifications
-  const toggleNotifications = () => {
-    setNotificationsEnabled(previousState => !previousState);
-  };
-
-  // Open distance selection modal
-  const openDistanceModal = () => {
-    setIsDistanceModalVisible(true);
-  };
-
-  // Open total distance selection modal
-  const openTotalDistanceModal = () => {
-    setIsTotalDistanceModalVisible(true);
-  };
-
-  // Open maximum stores selection modal
-  const openMaxStoresModal = () => {
-    setIsMaxStoresModalVisible(true);
-  };
-
-  // Close distance selection modal
-  const closeDistanceModal = () => {
-    setIsDistanceModalVisible(false);
-  };
-
-  // Close total distance selection modal
-  const closeTotalDistanceModal = () => {
-    setIsTotalDistanceModalVisible(false);
-  };
-
-  // Close maximum stores selection modal
-  const closeMaxStoresModal = () => {
-    setIsMaxStoresModalVisible(false);
-  };
+  
 
   // Select a new maximum store distance
-  const handleSelectDistance = (distance: number) => {
-    setMaxStoreDistance(distance);
-  };
-
+  const handleSelectDistance = (distance: number) => setMaxStoreDistance(distance);
   // Select a new total distance
-  const handleSelectTotalDistance = (distance: number) => {
-    setMaxTravelDistance(distance);
-  };
-
+  const handleSelectTotalDistance = (distance: number) => setMaxTravelDistance(distance);
   // Select a new maximum number of stores
-  const handleSelectMaxStores = (stores: number) => {
-    setMaxStores(stores);
-  };
+  const handleSelectMaxStores = (stores: number) => setMaxStores(stores);;
+
 
   return (
     <SafeAreaView className="flex-1 bg-white" style={{ direction: 'rtl' }}>
@@ -99,7 +53,7 @@ export default function SettingsScreen() {
               trackColor={{ false: '#d1d5db', true: '#93c5fd' }}
               thumbColor={notificationsEnabled ? '#3b82f6' : '#f3f4f6'}
               ios_backgroundColor="#d1d5db"
-              onValueChange={toggleNotifications}
+              onValueChange={() => setNotificationsEnabled(previousState => !previousState)}
               value={notificationsEnabled}
             />
           }
@@ -109,21 +63,21 @@ export default function SettingsScreen() {
         <SettingItem 
           title="מרחק מקסימלי לסניף" 
           value={`${maxStoreDistance} ק"מ`}
-          onPress={openDistanceModal}
+          onPress={() => setIsDistanceModalVisible(true)}
         />
         
         {/* Total distance */}
         <SettingItem 
           title="מרחק כולל" 
           value={`${maxTravelDistance} ק"מ`}
-          onPress={openTotalDistanceModal}
+          onPress={() => setIsTotalDistanceModalVisible(true)}
         />
         
         {/* Maximum number of stores */}
         <SettingItem 
           title="מספר חנויות מקסימלי" 
           value={`${maxStores} חנויות`}
-          onPress={openMaxStoresModal}
+          onPress={() => setIsMaxStoresModalVisible(true)}
         />
         
         {/* Location tracking */}
@@ -143,6 +97,13 @@ export default function SettingsScreen() {
           title="אודות Groczi" 
           value=""
         />
+
+        <SettingItem
+          title="כניסת משתמש" 
+          value=""
+          onPress={() => router.push('/LoginPage')}
+        />
+
         
         {/* App version */}
         <View className="py-10 items-center">
@@ -153,7 +114,7 @@ export default function SettingsScreen() {
       {/* Distance selection modal */}
       <DistancePickerModal
         isVisible={isDistanceModalVisible}
-        onClose={closeDistanceModal}
+        onClose={() => setIsDistanceModalVisible(false)}
         onSelectDistance={handleSelectDistance}
         currentDistance={maxStoreDistance}
         minDistance={1}
@@ -164,7 +125,7 @@ export default function SettingsScreen() {
       {/* Total distance selection modal */}
       <DistancePickerModal
         isVisible={isTotalDistanceModalVisible}
-        onClose={closeTotalDistanceModal}
+        onClose={() => setIsTotalDistanceModalVisible(false)}
         onSelectDistance={handleSelectTotalDistance}
         currentDistance={maxTravelDistance}
         minDistance={1}
@@ -175,7 +136,7 @@ export default function SettingsScreen() {
       {/* Maximum number of stores selection modal */}
       <DistancePickerModal
         isVisible={isMaxStoresModalVisible}
-        onClose={closeMaxStoresModal}
+        onClose={() =>  setIsMaxStoresModalVisible(false)}
         onSelectDistance={handleSelectMaxStores}
         currentDistance={maxStores}
         minDistance={1}
