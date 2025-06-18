@@ -101,9 +101,16 @@ export const usePriceHistoryData = (data: StorePriceHistory[], maxStores: number
     const storesWithData = data.filter(
       (store) => store.prices && store.prices.length > 0
     );
-    const processedStores = disableShuffling 
-      ? storesWithData 
-      : [...storesWithData].sort(() => 0.5 - Math.random());
+    
+    let processedStores: StorePriceHistory[];
+    if (disableShuffling) {
+      // For 'all' and 'single' modes - use all stores as is
+      processedStores = storesWithData;
+    } else {
+      // For 'top5' mode - sort by number of data points (descending)
+      processedStores = [...storesWithData].sort((a, b) => b.prices.length - a.prices.length);
+    }
+    
     const selectedStores = processedStores.slice(
       0,
       Math.min(maxStores, storesWithData.length)
@@ -188,9 +195,16 @@ export const PriceHistoryChart: React.FC<PriceHistoryChartProps> = ({
     const storesWithData = data.filter(
       (store) => store.prices && store.prices.length > 0
     );
-    const processedStores = disableShuffling 
-      ? storesWithData 
-      : [...storesWithData].sort(() => 0.5 - Math.random());
+    
+    let processedStores: StorePriceHistory[];
+    if (disableShuffling) {
+      // For 'all' and 'single' modes - use all stores as is
+      processedStores = storesWithData;
+    } else {
+      // For 'top5' mode - sort by number of data points (descending)
+      processedStores = [...storesWithData].sort((a, b) => b.prices.length - a.prices.length);
+    }
+    
     const currentSelectedStores = processedStores.slice(
       0,
       Math.min(maxStores, storesWithData.length)
