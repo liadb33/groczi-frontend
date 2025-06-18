@@ -19,7 +19,7 @@ const Layout = () => {
         }}
       />
       <Stack.Screen
-        name="RequestsPage"
+        name="requests"
         options={{
           title: "בקשות",
           headerShown: true,

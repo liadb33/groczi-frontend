@@ -31,11 +31,17 @@ export const createRequest = async (
 };
 
 export const updateRequestStatus = async (id: number, status: string) => {
+  
   const res = await fetch(`${API_URL}/requests/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({ requestStatus: status }),
   });
-  if (!res.ok) throw new Error("Failed to update request status");
+  
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.log("Error response body:", errorText);
+    throw new Error(`Failed to update request status: ${res.status} - ${errorText}`);
+  }
   return res.json();
 };

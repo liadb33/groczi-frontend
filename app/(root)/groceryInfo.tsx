@@ -256,16 +256,6 @@ const GroceryInfoScreen = () => {
                 </Text>
               </View>
             </View>
-            <View className="flex-row-reverse items-center mt-1">
-              <MaterialCommunityIcons
-                name="map-marker-outline"
-                size={16}
-                color="#888"
-              />
-              <Text className="text-sm text-gray-600 text-right ml-1">
-                {currentItem.itemName}
-              </Text>
-            </View>
           </View>
 
           {/* Add to Cart */}

@@ -1,6 +1,6 @@
 import { useUsersStore } from '@/store/users.store';
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { router } from 'expo-router';
 
 export default function LoginPage() {
@@ -9,12 +9,21 @@ export default function LoginPage() {
   const login = useUsersStore(state => state.login);
   const loading = useUsersStore(state => state.loading);
   const error = useUsersStore(state => state.error);
+  const user = useUsersStore(state => state.loginUser);
+
 
   const handleLogin = async () => {
     try {
       await login(username, password);
-      router.push('./RequestsPage');
+      // Check the store state after login attempt
+      const currentUser = useUsersStore.getState().loginUser;
+      if (currentUser) {
+        router.push('./requests');
+      } else {
+        Alert.alert("שם משתמש או סיסמה שגויים");
+      }
     } catch (err) {
+      Alert.alert("שגיאה בכניסה");
     }
   };
   return (
@@ -22,9 +31,7 @@ export default function LoginPage() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       className="flex-1 bg-white"
     >
-      <View className="flex-1 px-6 pt-12" style={{ direction: 'rtl' }}>
-        <Text className="text-3xl font-bold text-gray-900 mb-8">כניסת משתמש</Text>
-
+      <View className="flex-1 px-6 pt-12">
         <View className="mb-6">
           <Text className="text-base font-semibold text-gray-700 mb-2">שם משתמש</Text>
           <TextInput

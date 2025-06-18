@@ -22,12 +22,18 @@ export const useUsersStore = create<UsersStore>((set) => ({
   login: async (username, password) => {
     set({ loginUser:null,loading: true, error: null });
     try {
-      const res = await loginUser(username, password);
-      if(res.status === 200) 
-        set({loginUser:res.userId });
-      else 
+      const res = await loginUser(username, password); 
+      if(res && res.id) {
+        set({loginUser: res });
+      } else if(res && res.userId) {
+        set({loginUser: { id: res.userId, username: res.username || username } });
+      } else if(res && res.user) {
+        set({loginUser: res.user });
+      } else {
         set({ loginUser:null,error: "Invalid username or password"});
+      }
     } catch (error: any) {
+      console.log("Login error:", error);
       set({ loginUser:null,error: error.message || "Login failed",});
     } finally {
       set({ loading: false });

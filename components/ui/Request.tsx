@@ -22,16 +22,13 @@ export default function Request({ item }: RequestProps) {
 
     const handleUpdateRequestStatus = async () => {
         try {
-            await updateRequestStatus(item.id, 'DONE');
-            if (!error) {
-                Alert.alert('הצלחה', 'הבקשה סיומה בהצלחה');
-                router.back();
-            }
-            else {
-                Alert.alert('שגיאה', 'לא הצלחנו לסיים את הבקשה');
-            }
+            // Try different common status values
+            await updateRequestStatus(item.id, 'טופל');
+            // No alerts and no navigation - just stay on the page
+            // The component will re-render automatically when the store updates
         } catch {
-            Alert.alert('שגיאה', error || 'לא הצלחנו לסיים את הבקשה');
+            // Only show error if something actually fails
+            console.error('Failed to update request status');
         }
     };
     return (
