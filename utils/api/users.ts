@@ -2,7 +2,7 @@ import { API_URL } from "./config";
 
 
 export const loginUser = async (username: string, password: string) => {
-  const res = await fetch(`${API_URL}/users/login`, {
+  const res = await fetch(`${API_URL}/autentication/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),

@@ -1,5 +1,5 @@
-import { createRequest, deleteRequest, getAllRequests } from "@/utils/api/requests";
-import {create} from "zustand";
+import { createRequest, deleteRequest, getAllRequests, updateRequestStatus } from "@/utils/api/requests";
+import { create } from "zustand";
 interface Request {
   id: number;
   itemId: string;
@@ -14,7 +14,7 @@ interface RequestsStore {
   requests: Request[];
   loading: boolean;
   error: string | null;
-
+  success: boolean;
   fetchAllRequests: () => Promise<void>;
   deleteRequest: (id: number) => Promise<void>;
   createRequest: (
@@ -23,12 +23,14 @@ interface RequestsStore {
     reqSubject: string,
     reqBody: string
   ) => Promise<void>;
+  updateRequestStatus: (id: number, status: string) => Promise<void>;
 }
 
 export const useRequestsStore = create<RequestsStore>((set, get) => ({
   requests: [],
   loading: false,
   error: null,
+  success: false,
 
   fetchAllRequests: async () => {
     set({ loading: true, error: null });
@@ -54,16 +56,34 @@ export const useRequestsStore = create<RequestsStore>((set, get) => ({
   },
 
   createRequest: async (itemId, deviceId, reqSubject, reqBody) => {
-    set({ loading: true, error: null });
+    set({success: false, loading: true, error: null });
     try {
       const newRequest = await createRequest(itemId, deviceId, reqSubject, reqBody);
-      set((state) => ({
-        requests: [...state.requests, newRequest],
-        loading: false,
-      }));
+      if (newRequest.itemId) {
+        set((state) => ({
+          success: true,
+          requests: [...state.requests, newRequest],
+        }));
+      } else {
+        set({success: false,error: "Failed to create request"});
+      }
     } catch (error: any) {
-      set({ error: error.message || "Failed to create request", loading: false });
+      set({ success: false,error: error.message || "Failed to create request" });
+    } finally {
+      set({ loading: false })
     }
   },
-
+  updateRequestStatus: async (id, status) => {
+    set({ loading: true, error: null });
+    try {
+      const res = await updateRequestStatus(id, status);
+      if(!res.id) 
+          set({ error: "Failed to update request status", loading: false });
+      // TODO: update this
+    } catch (error: any) {
+      set({ error: error.message || "Failed to update request status", loading: false });
+    } finally {
+      set({ loading: false  });
+    }
+  },
 }));

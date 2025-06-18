@@ -21,7 +21,7 @@ const Layout = () => {
       <Stack.Screen
         name="RequestsPage"
         options={{
-          title: "Requests",
+          title: "בקשות",
           headerShown: true,
           headerBackTitle: "Back",
           headerTitleAlign: "center",
@@ -29,14 +29,25 @@ const Layout = () => {
       />
 
       <Stack.Screen
-        name="LoginPage"
+        name="login"
         options={{
-          title: "Login",
+          title: "כניסת משתמש",
           headerShown: true,
           headerBackTitle: "Back",
           headerTitleAlign: "center",
         }}
       />
+
+      <Stack.Screen
+        name="request-form"
+        options={{
+          title: "שליחת בקשה",
+          headerShown: true,
+          headerBackTitle: "Back",
+          headerTitleAlign: "center",
+        }}
+      />
+
       {/* <Stack.Screen name = "location" options={{
                 title: "Location",
                 headerShown: true,

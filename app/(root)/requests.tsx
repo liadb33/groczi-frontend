@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, FlatList, ActivityIndicator } from 'react-native';
 import { useRequestsStore } from '@/store/request.store';
+import Request from '@/components/ui/Request';
 
 export default function RequestsPage() {
   const { requests, fetchAllRequests, loading, error } = useRequestsStore();
@@ -36,20 +37,9 @@ export default function RequestsPage() {
   return (
     <FlatList
       data={requests}
-      keyExtractor={(item) => item.id.toString()}
-      contentContainerStyle={{ padding: 16 }}
-      renderItem={({ item }) => (
-        <View className="bg-white rounded-xl p-4 mb-4 shadow">
-          <Text className="font-bold text-lg mb-1">{item.reqSubject}</Text>
-          <Text className="text-gray-700 mb-1">{item.reqBody}</Text>
-          <Text className="text-sm text-gray-500">
-            סטטוס: {item.reqStatus}
-          </Text>
-          <Text className="text-sm text-gray-400 mt-2">
-            נוצר ב: {new Date(item.createdAt).toLocaleString('he-IL')}
-          </Text>
-        </View>
-      )}
+      keyExtractor={item => item.id.toString()}
+      contentContainerStyle={{ paddingVertical: 16 }}
+      renderItem={({ item }) => <Request item={item} />}
     />
   );
 }

@@ -1,23 +1,26 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import { View, Text, ScrollView, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack, router } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import SettingItem from '@/components/ui/SettingItem';
 import DistancePickerModal from '@/components/ui/DistancePickerModal';
 import { useSettingsStore } from '@/store';
+import { useUsersStore } from '@/store/users.store';
+
 
 export default function SettingsScreen() {
   // Notification toggle state
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  
+  const { loginUser } = useUsersStore();
+  const router = useRouter();
   // Distance selection modal state
   const [isDistanceModalVisible, setIsDistanceModalVisible] = useState(false);
   const [isTotalDistanceModalVisible, setIsTotalDistanceModalVisible] = useState(false);
   const [isMaxStoresModalVisible, setIsMaxStoresModalVisible] = useState(false);
-  
+
   // Connect to the settings store
   const { maxStoreDistance, setMaxStoreDistance, maxTravelDistance, setMaxTravelDistance, maxStores, setMaxStores } = useSettingsStore();
-  
+
 
   // Select a new maximum store distance
   const handleSelectDistance = (distance: number) => setMaxStoreDistance(distance);
@@ -32,20 +35,20 @@ export default function SettingsScreen() {
       {/* Settings list */}
       <ScrollView className="flex-1 px-4">
         {/* Language setting with value */}
-        <SettingItem 
-          title="שפה" 
-          value="עברית" 
+        <SettingItem
+          title="שפה"
+          value="עברית"
         />
-        
+
         {/* Address management */}
-        <SettingItem 
-          title="ניהול כתובות" 
+        <SettingItem
+          title="ניהול כתובות"
           value=""
         />
-        
+
         {/* Notifications with toggle */}
-        <SettingItem 
-          title="התראות" 
+        <SettingItem
+          title="התראות"
           showChevron={false}
           value=""
           customRight={
@@ -58,53 +61,59 @@ export default function SettingsScreen() {
             />
           }
         />
-        
+
         {/* Maximum store distance */}
-        <SettingItem 
-          title="מרחק מקסימלי לסניף" 
+        <SettingItem
+          title="מרחק מקסימלי לסניף"
           value={`${maxStoreDistance} ק"מ`}
           onPress={() => setIsDistanceModalVisible(true)}
         />
-        
+
         {/* Total distance */}
-        <SettingItem 
-          title="מרחק כולל" 
+        <SettingItem
+          title="מרחק כולל"
           value={`${maxTravelDistance} ק"מ`}
           onPress={() => setIsTotalDistanceModalVisible(true)}
         />
-        
+
         {/* Maximum number of stores */}
-        <SettingItem 
-          title="מספר חנויות מקסימלי" 
+        <SettingItem
+          title="מספר חנויות מקסימלי"
           value={`${maxStores} חנויות`}
           onPress={() => setIsMaxStoresModalVisible(true)}
         />
-        
+
         {/* Location tracking */}
-        <SettingItem 
-          title="מעקב מיקום" 
+        <SettingItem
+          title="מעקב מיקום"
           value=""
         />
-        
+
         {/* Terms of use */}
-        <SettingItem 
-          title="תנאי שימוש" 
+        <SettingItem
+          title="תנאי שימוש"
           value=""
         />
-        
+
         {/* About Groczi */}
-        <SettingItem 
-          title="אודות Groczi" 
+        <SettingItem
+          title="אודות Groczi"
           value=""
         />
+
 
         <SettingItem
-          title="כניסת משתמש" 
+          title="כניסת משתמש"
           value=""
-          onPress={() => router.push('/LoginPage')}
+          onPress={() => {
+            if (loginUser)
+              router.push('requests' as any);
+            else
+              router.push('login' as any);
+          }}
         />
 
-        
+
         {/* App version */}
         <View className="py-10 items-center">
           <Text className="text-gray-500">גרסה 1.0</Text>
@@ -136,7 +145,7 @@ export default function SettingsScreen() {
       {/* Maximum number of stores selection modal */}
       <DistancePickerModal
         isVisible={isMaxStoresModalVisible}
-        onClose={() =>  setIsMaxStoresModalVisible(false)}
+        onClose={() => setIsMaxStoresModalVisible(false)}
         onSelectDistance={handleSelectMaxStores}
         currentDistance={maxStores}
         minDistance={1}
