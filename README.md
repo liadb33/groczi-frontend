@@ -11,19 +11,24 @@
 
 ## 📋 Table of Contents
 
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Architecture](#architecture)
-- [Technology Stack](#technology-stack)
-- [Project Structure](#project-structure)
-- [State Management](#state-management)
-- [Navigation System](#navigation-system)
-- [Component Library](#component-library)
-- [API Integration](#api-integration)
-- [Setup & Installation](#setup--installation)
-- [Development Workflow](#development-workflow)
-- [Performance Optimizations](#performance-optimizations)
-- [Internationalization](#internationalization)
+- [📱 App Screenshots](#-app-screenshots)
+- [🎯 Overview](#-overview)
+- [✨ Key Features](#-key-features)
+- [🏗️ Architecture](#️-architecture)
+- [🛠️ Technology Stack](#️-technology-stack)
+- [📁 Project Structure](#-project-structure)
+- [🗄️ State Management](#️-state-management)
+- [🧭 Navigation System](#-navigation-system)
+- [🎨 Component Library](#-component-library)
+- [🔌 API Integration](#-api-integration)
+- [🚀 Setup & Installation](#-setup--installation)
+- [🔄 Development Workflow](#-development-workflow)
+- [⚡ Performance Optimizations](#-performance-optimizations)
+- [🌐 Internationalization](#-internationalization)
+- [📱 Core Screen Functionality](#-core-screen-functionality)
+- [🛒 Shopping Features](#-shopping-features)
+- [🎨 UI/UX Excellence](#-uiux-excellence)
+- [🔧 Advanced Features](#-advanced-features)
 
 ---
 
