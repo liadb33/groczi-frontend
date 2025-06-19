@@ -244,7 +244,12 @@ const GroceryInfoScreen = () => {
               יצרן: {currentItem.manufacturerName || "לא ידוע"}
             </Text>
             <View className="flex-row-reverse justify-between items-start">
-              <Text className="text-2xl font-bold text-gray-800 flex-1 ml-2 text-right">
+              <Text className="text-sm text-gray-500 mb-1 text-right">
+                קטגוריה: {currentItem.category || "לא ידוע"}
+              </Text>
+            </View>
+            <View className="flex-row-reverse justify-between items-start">
+              <Text className="text-2xl font-bold mt-3 text-gray-800 flex-1 ml-2 text-right">
                 {currentItem.itemName}
               </Text>
               <View className="items-start">
@@ -255,16 +260,6 @@ const GroceryInfoScreen = () => {
                   ₪{minPrice}
                 </Text>
               </View>
-            </View>
-            <View className="flex-row-reverse items-center mt-1">
-              <MaterialCommunityIcons
-                name="map-marker-outline"
-                size={16}
-                color="#888"
-              />
-              <Text className="text-sm text-gray-600 text-right ml-1">
-                {currentItem.itemName}
-              </Text>
             </View>
           </View>
 

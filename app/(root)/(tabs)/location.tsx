@@ -122,7 +122,7 @@ const Location = () => {
                     uri: store.subchains?.imageUrl || "https://images.unsplash.com/photo-1569470451072-68314f596aec?q=80&w=2662&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                   }}
                   className="w-12 h-12 rounded-full bg-gray-200 ml-4"
-                  resizeMode="cover"
+                  resizeMode="contain"
                 />
                 <View className="flex-1">
                   <Text className="font-semibold text-base text-gray-800 text-right mb-1">
@@ -155,10 +155,10 @@ const Location = () => {
           <View className="flex-row-reverse items-center mb-4">
             <Image
               source={{
-                uri: "https://images.unsplash.com/photo-1569470451072-68314f596aec?q=80&w=2662&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                uri: selectedMarker.subchains?.imageUrl || "https://images.unsplash.com/photo-1569470451072-68314f596aec?q=80&w=2662&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
               }}
-              className="w-12 h-12 rounded-full bg-black ml-4"
-              resizeMode="cover"
+              className="w-12 h-12 rounded-full ml-4"
+              resizeMode="contain"
             />
             <View className="flex-1">
               <Text className="text-lg font-bold mb-1 text-right">

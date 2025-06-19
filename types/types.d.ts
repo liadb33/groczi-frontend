@@ -188,6 +188,7 @@ declare interface DetailedGroceryItem {
   qtyInPackage?: number | null;
   unitOfMeasurePrice?: string; 
   quantity?: string; 
+  category?: string | null;
 }
 
 

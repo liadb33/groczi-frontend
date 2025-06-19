@@ -338,7 +338,7 @@ export default function HomeScreen() {
         const { latitude, longitude } = location.coords;
 
         const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
-        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&language=he&key=${GOOGLE_MAPS_API_KEY}`;
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${32.313993},${34.863054}&language=he&key=${GOOGLE_MAPS_API_KEY}`;
 
         try {
           const response = await fetch(geocodeUrl);
