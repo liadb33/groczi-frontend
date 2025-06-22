@@ -3,7 +3,7 @@ import { View, Text, SafeAreaView, ActivityIndicator, TouchableOpacity, Alert, S
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useGroceryStore } from '@/store';
-import { PriceHistoryChart, usePriceHistoryData, STORE_COLORS, generateUniqueColors } from '@/components/PriceHistoryChart';
+import { PriceHistoryChart, usePriceHistoryData, STORE_COLORS, generateUniqueColors } from '@/components/chart/PriceHistoryChart';
 import AppHeader from '@/components/header/AppHeader';
 import CustomListModal from '@/components/grocery/CustomListModal';
 

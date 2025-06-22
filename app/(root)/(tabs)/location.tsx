@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, Image, Linking, Platform, ScrollView } from "react-native";
-import Map from "@/components/Map";
-import GoogleTextInput from "@/components/GoogleTextInput";
+import Map from "@/components/location/Map";
+import GoogleTextInput from "@/components/ui/GoogleTextInput";
 import { useLocationStore, useStores } from "@/store";
 import { useState, useMemo } from "react";
 

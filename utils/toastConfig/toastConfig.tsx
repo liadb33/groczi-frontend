@@ -1,4 +1,4 @@
-import { CustomRTLToast } from "@/components/CustomRTLToast"; // adjust path as needed
+import { CustomRTLToast } from "@/components/ui/CustomRTLToast"; // adjust path as needed
 
 export const toastConfig = {
   success: (props: any) => <CustomRTLToast {...props} />,

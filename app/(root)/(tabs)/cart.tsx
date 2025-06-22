@@ -9,8 +9,8 @@ import {
   Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import CartItem from '@/components/CartItem';
-import SwipeDeleteItem from '@/components/SwipeDeleteItem';
+import CartItem from '@/components/grocery/CartItem';
+import SwipeDeleteItem from '@/components/ui/SwipeDeleteItem';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCartStore } from '@/store';
 import { useOptimizationStore } from '@/store';

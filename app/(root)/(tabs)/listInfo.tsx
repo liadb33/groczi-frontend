@@ -7,7 +7,7 @@ import {
   Image,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import CartItem from '@/components/CartItem';
+import CartItem from '@/components/grocery/CartItem';
 import { useListDetailsStore } from '@/store';
 import AppHeader from '@/components/header/AppHeader';
 import { LinearGradient } from 'expo-linear-gradient';

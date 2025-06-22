@@ -1,11 +1,6 @@
+import React from 'react';
 import { View, Text, FlatList, TouchableOpacity, I18nManager } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-
-export interface Category {
-  id: number;
-  name: string;
-  icon: string;
-}
 
 export interface CategoryListProps {
   categories: Category[];

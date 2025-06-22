@@ -10,7 +10,7 @@ import {
   Settings
 } from "lucide-react-native";
 
-import { HapticTab } from '@/components/HapticTab';
+import { HapticTab } from '@/components/ui/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';

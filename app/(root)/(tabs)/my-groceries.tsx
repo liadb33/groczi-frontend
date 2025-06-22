@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
-import SwipeDeleteItem from '@/components/SwipeDeleteItem';
+import SwipeDeleteItem from '@/components/ui/SwipeDeleteItem';
 import GrocerySavedCard from '@/components/grocery/GrocerySavedCard';
 import { useCartStore, useBookmarkStore } from '@/store';
 import Toast from 'react-native-toast-message';

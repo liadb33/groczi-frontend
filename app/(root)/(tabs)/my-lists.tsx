@@ -8,7 +8,7 @@ import {
 import { useRouter } from 'expo-router';
 
 // Import components
-import SwipeDeleteItem from '@/components/SwipeDeleteItem';
+import SwipeDeleteItem from '@/components/ui/SwipeDeleteItem';
 import { AddListModal } from '@/components/lists/AddListModal';
 import { ListFooter } from '@/components/lists/ListFooter';
 import { ListsHeader } from '@/components/lists/ListsHeader';

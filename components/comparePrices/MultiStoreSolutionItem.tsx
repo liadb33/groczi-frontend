@@ -6,22 +6,24 @@ import StoreInSolutionItem from './StoreInSolutionItem';
 interface MultiStoreSolutionItemProps {
   solution: MultiStoreSolution;
   index: number;
-  solutionKey: string;
-  isExpanded: boolean;
-  expandedStoresInSolution: { [key: string]: boolean };
-  stores: Store[];
-  onToggleSolutionExpansion: () => void;
-  onToggleStoreExpansion: (storeKey: string) => void;
+  solutionKey?: string;
+  isExpanded?: boolean;
+  expandedStoresInSolution?: { [key: string]: boolean };
+  stores?: Store[];
+  onPress?: (solution: MultiStoreSolution, index: number) => void;
+  onToggleSolutionExpansion?: () => void;
+  onToggleStoreExpansion?: (storeKey: string) => void;
   onNavigateToStore?: (address: string) => void;
 }
 
 const MultiStoreSolutionItem: React.FC<MultiStoreSolutionItemProps> = ({
   solution,
   index,
-  solutionKey,
-  isExpanded,
-  expandedStoresInSolution,
-  stores,
+  solutionKey = `solution-${index}`,
+  isExpanded = false,
+  expandedStoresInSolution = {},
+  stores = [],
+  onPress,
   onToggleSolutionExpansion,
   onToggleStoreExpansion,
   onNavigateToStore,
@@ -30,34 +32,78 @@ const MultiStoreSolutionItem: React.FC<MultiStoreSolutionItemProps> = ({
 
   const storeNames = Object.keys(solution.assignments);
 
+  const handlePress = () => {
+    if (onPress) {
+      onPress(solution, index);
+    }
+  };
+
+  const handleToggleSolution = () => {
+    if (onToggleSolutionExpansion) {
+      onToggleSolutionExpansion();
+    }
+  };
+
   return (
-    <View className="bg-white mx-auto my-3 p-4 rounded-2xl shadow-lg w-[92%]">
-      <TouchableOpacity
-        onPress={onToggleSolutionExpansion}
-        className="flex-row justify-between items-center pb-2"
-      >
-        <Ionicons
-          name={
-            isExpanded
-              ? "chevron-up-circle-outline"
-              : "chevron-down-circle-outline"
-          }
-          size={28}
-          color="#2563EB"
-        />
+    <TouchableOpacity 
+      className="bg-white mx-auto my-3 p-4 rounded-2xl shadow-lg w-[92%]"
+      onPress={handlePress}
+      activeOpacity={0.7}
+    >
+      <View className="flex-row justify-between items-center pb-2">
+        <TouchableOpacity onPress={handleToggleSolution}>
+          <Ionicons
+            name={
+              isExpanded
+                ? "chevron-up-circle-outline"
+                : "chevron-down-circle-outline"
+            }
+            size={28}
+            color="#2563EB"
+          />
+        </TouchableOpacity>
         <View className="flex-1 mx-3 items-end">
           <Text className="text-lg font-bold text-blue-600">
-            🏆 האופציה הטובה ביותר #{index + 1}
+            #{index + 1}
           </Text>
           <Text className="text-2xl font-extrabold text-gray-800 mt-1">
-            סה"כ: ₪{solution.item_cost.toFixed(2)}
+            ₪{solution.total_cost.toFixed(2)}
+          </Text>
+          <Text className="text-lg font-semibold text-green-600">
+            ₪{solution.item_cost.toFixed(2)}
           </Text>
           <Text className="text-sm text-gray-500">
-            מרחק כולל וחזרה הביתה: {solution.travel_cost.toFixed(1)}{" "}
-            ק״מ
+            ₪{solution.travel_cost.toFixed(2)}
+          </Text>
+          <Text className="text-sm text-gray-600 mt-1">
+            {storeNames.length} {storeNames.length === 1 ? 'חנות' : 'חנויות'}
           </Text>
         </View>
-      </TouchableOpacity>
+      </View>
+
+      {/* Store names display */}
+      <View className="flex-row flex-wrap justify-end mt-2">
+        {storeNames.map((storeName, idx) => (
+          <Text key={idx} className="text-base font-semibold text-gray-700 ml-2">
+            {storeName}
+            {idx < storeNames.length - 1 && ','}
+          </Text>
+        ))}
+      </View>
+
+      {/* Items count per store */}
+      <View className="flex-row flex-wrap justify-end mt-1">
+        {storeNames.map((storeName, idx) => {
+          const storeData = solution.assignments![storeName];
+          const itemCount = storeData.items.length;
+          return (
+            <Text key={idx} className="text-sm text-gray-500 ml-2">
+              {itemCount} {itemCount === 1 ? 'פריט' : 'פריטים'}
+              {idx < storeNames.length - 1 && ' •'}
+            </Text>
+          );
+        })}
+      </View>
 
       {isExpanded && storeNames.length > 0 && (
         <View className="mt-3 border-t border-gray-200 pt-3">
@@ -74,7 +120,7 @@ const MultiStoreSolutionItem: React.FC<MultiStoreSolutionItemProps> = ({
                 solutionKey={solutionKey}
                 isExpanded={isStoreExpanded}
                 stores={stores}
-                onToggleExpansion={() => onToggleStoreExpansion(storeKey)}
+                onToggleExpansion={() => onToggleStoreExpansion?.(storeKey)}
                 onNavigate={onNavigateToStore}
               />
             );
@@ -86,7 +132,7 @@ const MultiStoreSolutionItem: React.FC<MultiStoreSolutionItemProps> = ({
           אין חנויות בפתרון זה.
         </Text>
       )}
-    </View>
+    </TouchableOpacity>
   );
 };
 

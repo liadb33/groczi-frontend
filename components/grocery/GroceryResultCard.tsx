@@ -1,3 +1,4 @@
+import React from "react";
 import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -79,7 +80,7 @@ export const GroceryResultCard: React.FC<GroceryResultCardProps> = ({
             </Text>
             {/* Price (Left) */}
             <Text className="text-xl font-extrabold text-[#20232A]">
-              {price}
+              ₪{price}
             </Text>
           </View>
 

@@ -563,3 +563,63 @@ declare interface CategoryStore {
     limit?: number
   ) => Promise<void>;
 }
+
+declare interface GroceryList {
+  id: string;
+  name: string;
+  items: {
+    id: string;
+    itemCode: string;
+    name: string;
+    quantity: number;
+    category: string;
+    isChecked: boolean;
+  }[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+declare interface ListDetailsProps {
+  list: GroceryList;
+  onItemToggle: (itemId: string) => void;
+  onItemQuantityChange: (itemId: string, newQuantity: number) => void;
+  onItemRemove: (itemId: string) => void;
+  onAddToCart: (list: GroceryList) => void;
+}
+
+declare interface SingleStoreItemCardProps {
+  store?: SingleStoreEvaluation;
+  item?: SingleStoreEvaluation;
+  isPartialMatch?: boolean;
+  groceries?: CustomOptimizationItem[];
+  storeImageUrl?: string;
+  onPress?: (store: SingleStoreEvaluation) => void;
+  onNavigate?: (locationData: {
+    latitude: number;
+    longitude: number;
+    address: string;
+    storeId: string;
+    chainId: string;
+    subChainId: string;
+  }) => void;
+  onShowMissingItems?: (missingItems: { id: string; name: string }[]) => void;
+}
+
+declare interface MultiStoreSolutionItemProps {
+  solution: MultiStoreSolution;
+  index: number;
+  solutionKey?: string;
+  isExpanded?: boolean;
+  expandedStoresInSolution?: { [key: string]: boolean };
+  stores?: Store[];
+  onPress?: (solution: MultiStoreSolution, index: number) => void;
+  onToggleSolutionExpansion?: () => void;
+  onToggleStoreExpansion?: (storeKey: string) => void;
+  onNavigateToStore?: (address: string) => void;
+}
+
+declare interface Category {
+  id: number;
+  name: string;
+  icon: string;
+}
